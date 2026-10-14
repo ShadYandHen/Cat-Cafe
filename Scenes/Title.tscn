@@ -1,0 +1,93 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Theme" path="res://Assets/UI/cozy_theme.tres" id="1"]
+[ext_resource type="Script" path="res://Scripts/UI/title.gd" id="2"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/MochiPlaceholder.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="4"]
+
+[ext_resource type="Script" path="res://Scripts/UI/title_backdrop.gd" id="5"]
+[ext_resource type="Texture2D" path="res://Assets/Branding/paw.svg" id="6"]
+
+[ext_resource type="PackedScene" path="res://Scenes/UI/BrandLogo.tscn" id="7"]
+
+[node name="Title" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1")
+script = ExtResource("2")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.96, 0.87, 0.78, 1)
+
+[node name="Storefront" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("5")
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 0
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_right = 64
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="Layout" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TopSpace" type="Control" parent="Content/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Name" parent="Content/Layout" instance=ExtResource("7")]
+layout_mode = 2
+
+[node name="Tagline" type="Label" parent="Content/Layout"]
+layout_mode = 2
+theme_type_variation = &"CreamLabel"
+text = "Little Paws. Big Dreams."
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="MochiPlaceholder" parent="Content/Layout" instance=ExtResource("3")]
+layout_mode = 2
+
+[node name="MochiName" type="Label" parent="Content/Layout"]
+layout_mode = 2
+theme_type_variation = &"CreamLabel"
+text = "Mochi • Your little barista"
+horizontal_alignment = 1
+
+[node name="Play" type="Button" parent="Content/Layout"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Play"
+icon = ExtResource("6")
+expand_icon = true
+theme_override_constants/icon_max_width = 48
+theme_override_constants/h_separation = 20
+theme_override_font_sizes/font_size = 32
+
+[node name="Settings" type="Button" parent="Content/Layout"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "Settings"
+theme_override_font_sizes/font_size = 28
+
+[node name="BottomSpace" type="Control" parent="Content/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SettingsPanel" parent="." instance=ExtResource("4")]

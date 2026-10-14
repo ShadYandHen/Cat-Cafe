@@ -1,0 +1,24 @@
+; Paw Pads Café — Godot 4 project foundation.
+config_version=5
+
+[application]
+config/name="Paw Pads Café"
+run/main_scene="res://Scenes/Title.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/description="Little Paws. Big Dreams. A cozy portrait-first café foundation."
+config/icon="res://Assets/Branding/app_icon.svg"
+
+[display]
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/size/window_width_override=432
+window/size/window_height_override=768
+window/size/resizable=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.98, 0.95, 0.9, 1)

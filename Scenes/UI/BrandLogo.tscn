@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Texture2D" path="res://Assets/Branding/paw.svg" id="1"]
+[sub_resource type="StyleBoxFlat" id="sign"]
+bg_color = Color(0.68, 0.47, 0.33, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 5
+border_color = Color(0.54, 0.35, 0.27, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_left = 28
+corner_radius_bottom_right = 28
+content_margin_top = 16.0
+content_margin_bottom = 16.0
+
+[node name="BrandLogo" type="PanelContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("sign")
+
+[node name="Words" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Top" type="HBoxContainer" parent="Words"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="Paw" type="Label" parent="Words/Top"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.94, 0.83, 1)
+theme_override_colors/font_outline_color = Color(0.38, 0.24, 0.19, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 52
+text = "Paw"
+
+[node name="PawMark" type="TextureRect" parent="Words/Top"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Pads" type="Label" parent="Words/Top"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.68, 0.73, 1)
+theme_override_colors/font_outline_color = Color(0.38, 0.24, 0.19, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 52
+text = "Pads"
+
+[node name="Cafe" type="Label" parent="Words"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.94, 0.83, 1)
+theme_override_colors/font_outline_color = Color(0.38, 0.24, 0.19, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 40
+text = "Café"
+horizontal_alignment = 1

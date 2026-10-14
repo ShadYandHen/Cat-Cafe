@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Texture2D" path="res://Assets/Characters/mochi_placeholder.svg" id="1"]
+[node name="MochiPlaceholder" type="TextureRect"]
+custom_minimum_size = Vector2(0, 340)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 5

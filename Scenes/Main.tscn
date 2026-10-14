@@ -1,0 +1,62 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/UI/TopHUD.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://Scenes/Environment/Cafe.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/BottomNavigation.tscn" id="3"]
+[ext_resource type="Theme" path="res://Assets/UI/cozy_theme.tres" id="4"]
+[ext_resource type="Script" path="res://Scripts/UI/main.gd" id="5"]
+
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="6"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4")
+script = ExtResource("5")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.96, 0.87, 0.78, 1)
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 32
+
+[node name="Layout" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="TopHUD" parent="Content/Layout" instance=ExtResource("1")]
+layout_mode = 2
+
+[node name="Welcome" type="Label" parent="Content/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Little Paws. Big Dreams."
+horizontal_alignment = 1
+
+[node name="Cafe" parent="Content/Layout" instance=ExtResource("2")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FoundationNote" type="Label" parent="Content/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Welcome home • Make room for little dreams"
+horizontal_alignment = 1
+
+[node name="BottomNavigation" parent="Content/Layout" instance=ExtResource("3")]
+layout_mode = 2
+
+[node name="SettingsPanel" parent="." instance=ExtResource("6")]

@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[node name="TopHUD" type="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="CafeName" type="Label" parent="TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+theme_type_variation = &"WoodLabel"
+text = "Paw Pads Café"
+vertical_alignment = 1
+
+[node name="Settings" type="Button" parent="TitleRow"]
+custom_minimum_size = Vector2(128, 96)
+layout_mode = 2
+text = "Settings"
+theme_override_font_sizes/font_size = 24
+tooltip_text = "Open settings"
+
+[node name="StatsRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Day" type="Label" parent="StatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"CreamLabel"
+text = "Day 1"
+
+[node name="Coins" type="Label" parent="StatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"CreamLabel"
+text = "Coins: 120"
+horizontal_alignment = 1
+
+[node name="Level" type="Label" parent="StatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"CreamLabel"
+text = "Café Lv. 1"
+horizontal_alignment = 2

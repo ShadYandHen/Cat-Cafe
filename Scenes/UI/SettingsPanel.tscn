@@ -1,0 +1,66 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/settings_panel.gd" id="1"]
+[sub_resource type="StyleBoxFlat" id="panel"]
+bg_color = Color(1, 0.96, 0.9, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_left = 28
+corner_radius_bottom_right = 28
+
+[node name="SettingsPanel" type="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Shade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.25, 0.17, 0.14, 0.35)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("panel")
+
+[node name="Margins" type="MarginContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="Layout" type="VBoxContainer" parent="Center/Panel/Margins"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Heading" type="Label" parent="Center/Panel/Margins/Layout"]
+layout_mode = 2
+text = "Settings"
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="Center/Panel/Margins/Layout"]
+layout_mode = 2
+text = "Make yourself at home.
+Audio and display options
+will arrive in a later step."
+horizontal_alignment = 1
+
+[node name="Close" type="Button" parent="Center/Panel/Margins/Layout"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "Back"
