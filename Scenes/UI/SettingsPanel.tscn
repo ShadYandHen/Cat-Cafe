@@ -1,13 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://Scripts/UI/settings_panel.gd" id="1"]
-[sub_resource type="StyleBoxFlat" id="panel"]
-bg_color = Color(1, 0.96, 0.9, 1)
-corner_radius_top_left = 28
-corner_radius_top_right = 28
-corner_radius_bottom_left = 28
-corner_radius_bottom_right = 28
-
 [node name="SettingsPanel" type="Control"]
 visible = false
 layout_mode = 1
@@ -34,7 +27,7 @@ anchor_bottom = 1.0
 [node name="Panel" type="PanelContainer" parent="Center"]
 custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("panel")
+
 
 [node name="Margins" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
@@ -55,9 +48,8 @@ horizontal_alignment = 1
 
 [node name="Description" type="Label" parent="Center/Panel/Margins/Layout"]
 layout_mode = 2
-text = "Make yourself at home.
-Audio and display options
-will arrive in a later step."
+text = "Make yourself at home. Audio and display options will arrive in a later step."
+autowrap_mode = 2
 horizontal_alignment = 1
 
 [node name="Close" type="Button" parent="Center/Panel/Margins/Layout"]

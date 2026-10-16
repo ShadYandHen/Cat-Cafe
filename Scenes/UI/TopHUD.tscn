@@ -30,18 +30,19 @@ theme_override_constants/separation = 16
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"CreamLabel"
-text = "Day 1"
+text = "Day\n1"
+horizontal_alignment = 1
 
 [node name="Coins" type="Label" parent="StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"CreamLabel"
-text = "Coins: 120"
+text = "Coins\n120"
 horizontal_alignment = 1
 
 [node name="Level" type="Label" parent="StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"CreamLabel"
-text = "Café Lv. 1"
-horizontal_alignment = 2
+text = "Level\n1"
+horizontal_alignment = 1

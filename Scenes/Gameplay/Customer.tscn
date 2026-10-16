@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Gameplay/customer_placeholder.gd" id="1"]
+[node name="Customer" type="Button"]
+theme_type_variation = &"PeachButton"
+text = "Guest"
+tooltip_text = "Tap this guest to take or serve their Basic Coffee order"
+[node name="Bunny" type="Control" parent="."]
+mouse_filter = 2
+script = ExtResource("1")

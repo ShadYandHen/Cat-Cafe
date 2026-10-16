@@ -1,37 +1,32 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 [ext_resource type="Texture2D" path="res://Assets/UI/Icons/upgrade.svg" id="1"]
 [ext_resource type="Texture2D" path="res://Assets/UI/Icons/decorate.svg" id="2"]
 [ext_resource type="Texture2D" path="res://Assets/UI/Icons/prepare.svg" id="3"]
 [ext_resource type="Texture2D" path="res://Assets/UI/Icons/cat_team.svg" id="4"]
 [ext_resource type="Texture2D" path="res://Assets/UI/Icons/map.svg" id="5"]
 
-[node name="BottomNavigation" type="HBoxContainer"]
+[ext_resource type="Script" path="res://Scripts/UI/bottom_navigation.gd" id="6"]
+
+[node name="BottomNavigation" type="Control"]
 custom_minimum_size = Vector2(0, 128)
 layout_mode = 2
-theme_override_constants/separation = 10
+script = ExtResource("6")
 
 [node name="Upgrade" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 128)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 0
+mouse_filter = 0
 theme_type_variation = &"MintButton"
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
-theme_override_font_sizes/font_size = 23
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_font_sizes/font_size = 1
 text = "Upgrade"
 tooltip_text = "Upgrade — placeholder"
 
 [node name="Icon" type="TextureRect" parent="Upgrade"]
 layout_mode = 0
-offset_top = 10.0
-offset_bottom = 62.0
-anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -26.0
-offset_right = 26.0
 mouse_filter = 2
 texture = ExtResource("1")
 expand_mode = 1
@@ -39,38 +34,27 @@ stretch_mode = 5
 
 [node name="Caption" type="Label" parent="Upgrade"]
 layout_mode = 1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 67.0
-offset_bottom = -10.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 24
 text = "Upgrade"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Decorate" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 128)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 0
+mouse_filter = 0
 theme_type_variation = &"PeachButton"
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
-theme_override_font_sizes/font_size = 23
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_font_sizes/font_size = 1
 text = "Decorate"
 tooltip_text = "Decorate — placeholder"
 
 [node name="Icon" type="TextureRect" parent="Decorate"]
 layout_mode = 0
-offset_top = 10.0
-offset_bottom = 62.0
-anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -26.0
-offset_right = 26.0
 mouse_filter = 2
 texture = ExtResource("2")
 expand_mode = 1
@@ -78,38 +62,27 @@ stretch_mode = 5
 
 [node name="Caption" type="Label" parent="Decorate"]
 layout_mode = 1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 67.0
-offset_bottom = -10.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 24
 text = "Decorate"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Prepare" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 128)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 0
+mouse_filter = 0
 theme_type_variation = &"GoldButton"
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
-theme_override_font_sizes/font_size = 23
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_font_sizes/font_size = 1
 text = "Prepare"
 tooltip_text = "Prepare — placeholder"
 
 [node name="Icon" type="TextureRect" parent="Prepare"]
 layout_mode = 0
-offset_top = 10.0
-offset_bottom = 62.0
-anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -26.0
-offset_right = 26.0
 mouse_filter = 2
 texture = ExtResource("3")
 expand_mode = 1
@@ -117,38 +90,27 @@ stretch_mode = 5
 
 [node name="Caption" type="Label" parent="Prepare"]
 layout_mode = 1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 67.0
-offset_bottom = -10.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 24
 text = "Prepare"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CatTeam" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 128)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 0
+mouse_filter = 0
 theme_type_variation = &"PeachButton"
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
-theme_override_font_sizes/font_size = 23
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_font_sizes/font_size = 24
 text = "Cat Team"
 tooltip_text = "Cat Team — placeholder"
 
 [node name="Icon" type="TextureRect" parent="CatTeam"]
 layout_mode = 0
-offset_top = 10.0
-offset_bottom = 62.0
-anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -26.0
-offset_right = 26.0
 mouse_filter = 2
 texture = ExtResource("4")
 expand_mode = 1
@@ -156,38 +118,27 @@ stretch_mode = 5
 
 [node name="Caption" type="Label" parent="CatTeam"]
 layout_mode = 1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 67.0
-offset_bottom = -10.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 24
 text = "Cat Team"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Map" type="Button" parent="."]
-custom_minimum_size = Vector2(0, 128)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 0
+mouse_filter = 0
 theme_type_variation = &"MintButton"
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
-theme_override_font_sizes/font_size = 23
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_font_sizes/font_size = 24
 text = "Map"
 tooltip_text = "Map — placeholder"
 
 [node name="Icon" type="TextureRect" parent="Map"]
 layout_mode = 0
-offset_top = 10.0
-offset_bottom = 62.0
-anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -26.0
-offset_right = 26.0
 mouse_filter = 2
 texture = ExtResource("5")
 expand_mode = 1
@@ -195,12 +146,8 @@ stretch_mode = 5
 
 [node name="Caption" type="Label" parent="Map"]
 layout_mode = 1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 67.0
-offset_bottom = -10.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 24
 text = "Map"
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="PackedScene" path="res://Scenes/UI/TopHUD.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://Scenes/Environment/Cafe.tscn" id="2"]
@@ -7,6 +7,9 @@
 [ext_resource type="Script" path="res://Scripts/UI/main.gd" id="5"]
 
 [ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="6"]
+
+[ext_resource type="PackedScene" path="res://Scenes/Gameplay/CafeSession.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://Scenes/Gameplay/GameplayView.tscn" id="8"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -58,5 +61,9 @@ horizontal_alignment = 1
 
 [node name="BottomNavigation" parent="Content/Layout" instance=ExtResource("3")]
 layout_mode = 2
+
+[node name="CafeSession" parent="." instance=ExtResource("7")]
+
+[node name="GameplayView" parent="." instance=ExtResource("8")]
 
 [node name="SettingsPanel" parent="." instance=ExtResource("6")]
