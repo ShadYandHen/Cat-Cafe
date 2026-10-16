@@ -1,0 +1,74 @@
+[
+  {
+    "id": "pink_paw_plaque",
+    "name": "Pink Paw Plaque",
+    "category": "Wall accents",
+    "price": 20,
+    "minimum_reputation": 1,
+    "rarity": "regular",
+    "asset": "",
+    "slot": "wall_display",
+    "symbol": "paw",
+    "color": "#e9a4bb"
+  },
+  {
+    "id": "morning_mug_sign",
+    "name": "Morning Mug Sign",
+    "category": "Wall accents",
+    "price": 35,
+    "minimum_reputation": 2,
+    "rarity": "regular",
+    "asset": "",
+    "slot": "wall_display",
+    "symbol": "mug",
+    "color": "#edc19b"
+  },
+  {
+    "id": "mint_leaf_jar",
+    "name": "Mint Leaf Jar",
+    "category": "Shelf accents",
+    "price": 25,
+    "minimum_reputation": 1,
+    "rarity": "regular",
+    "asset": "",
+    "slot": "shelf_display",
+    "symbol": "leaf",
+    "color": "#b8d3bd"
+  },
+  {
+    "id": "peach_blossom_vase",
+    "name": "Peach Blossom Vase",
+    "category": "Shelf accents",
+    "price": 40,
+    "minimum_reputation": 2,
+    "rarity": "regular",
+    "asset": "",
+    "slot": "shelf_display",
+    "symbol": "flower",
+    "color": "#f1c4b6"
+  },
+  {
+    "id": "cozy_star_mat",
+    "name": "Cozy Star Mat",
+    "category": "Floor accents",
+    "price": 30,
+    "minimum_reputation": 1,
+    "rarity": "regular",
+    "asset": "",
+    "slot": "floor_display",
+    "symbol": "star",
+    "color": "#f2da9b"
+  },
+  {
+    "id": "strawberry_heart_cushion",
+    "name": "Strawberry Heart Cushion",
+    "category": "Floor accents",
+    "price": 45,
+    "minimum_reputation": 3,
+    "rarity": "regular",
+    "asset": "",
+    "slot": "floor_display",
+    "symbol": "heart",
+    "color": "#e9a4bb"
+  }
+]

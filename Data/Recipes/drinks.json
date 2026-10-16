@@ -1,0 +1,149 @@
+[
+  {
+    "id": "basic_coffee",
+    "name": "Basic Coffee",
+    "category": "Coffee",
+    "ingredients": [
+      "Coffee",
+      "Water"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Brew",
+      "Assemble"
+    ],
+    "base_coins": 10,
+    "station": "Coffee",
+    "action": "Brew",
+    "target_seconds": 3
+  },
+  {
+    "id": "vanilla_coffee",
+    "name": "Vanilla Cloud Coffee",
+    "category": "Coffee",
+    "ingredients": [
+      "Coffee",
+      "Milk",
+      "Vanilla"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Brew",
+      "Assemble"
+    ],
+    "base_coins": 14,
+    "station": "Coffee",
+    "action": "Brew",
+    "target_seconds": 4
+  },
+  {
+    "id": "warm_milk",
+    "name": "Warm Milk",
+    "category": "Milk",
+    "ingredients": [
+      "Milk"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Heat",
+      "Assemble"
+    ],
+    "base_coins": 10,
+    "station": "Milk",
+    "action": "Heat",
+    "target_seconds": 3
+  },
+  {
+    "id": "honey_milk",
+    "name": "Honey Hug Milk",
+    "category": "Milk",
+    "ingredients": [
+      "Milk",
+      "Honey"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Mix",
+      "Assemble"
+    ],
+    "base_coins": 12,
+    "station": "Milk",
+    "action": "Mix",
+    "target_seconds": 4
+  },
+  {
+    "id": "garden_tea",
+    "name": "Garden Tea",
+    "category": "Tea",
+    "ingredients": [
+      "Tea",
+      "Water"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Steep",
+      "Assemble"
+    ],
+    "base_coins": 10,
+    "station": "Tea",
+    "action": "Steep",
+    "target_seconds": 4
+  },
+  {
+    "id": "honey_tea",
+    "name": "Honey Blossom Tea",
+    "category": "Tea",
+    "ingredients": [
+      "Tea",
+      "Water",
+      "Honey"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Steep",
+      "Assemble"
+    ],
+    "base_coins": 12,
+    "station": "Tea",
+    "action": "Steep",
+    "target_seconds": 5
+  },
+  {
+    "id": "berry_cooler",
+    "name": "Berry Breeze",
+    "category": "Cold Drinks",
+    "ingredients": [
+      "Berries",
+      "Water",
+      "Ice"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Chill",
+      "Assemble"
+    ],
+    "base_coins": 12,
+    "station": "Cold Drinks",
+    "action": "Chill",
+    "target_seconds": 3
+  },
+  {
+    "id": "iced_cocoa",
+    "name": "Iced Cocoa Cloud",
+    "category": "Cold Drinks",
+    "ingredients": [
+      "Cocoa",
+      "Milk",
+      "Ice"
+    ],
+    "steps": [
+      "Select ingredients",
+      "Mix",
+      "Assemble"
+    ],
+    "base_coins": 14,
+    "station": "Cold Drinks",
+    "action": "Mix",
+    "target_seconds": 4
+  }
+]

@@ -52,17 +52,111 @@ layout_mode = 2
 text = "Patience: 60s"
 horizontal_alignment = 1
 
-[node name="SpaceAbove" type="Control" parent="Content/Layout"]
+[node name="OrderChoices" type="HBoxContainer" parent="Content/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Choice1" type="Button" parent="Content/Layout/OrderChoices"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Order #1"
+
+[node name="Choice2" type="Button" parent="Content/Layout/OrderChoices"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Order #2"
+
+[node name="Workspace" type="ScrollContainer" parent="Content/Layout"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+follow_focus = true
 
-[node name="Description" type="Label" parent="Content/Layout"]
+[node name="Body" type="VBoxContainer" parent="Content/Layout/Workspace"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Stations" type="GridContainer" parent="Content/Layout/Workspace/Body"]
+layout_mode = 2
+columns = 2
+
+[node name="Station0" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Coffee"
+
+[node name="Station1" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Milk"
+
+[node name="Station2" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tea"
+
+[node name="Station3" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cold Drinks"
+
+[node name="Description" type="Label" parent="Content/Layout/Workspace/Body"]
 layout_mode = 2
 text = "Basic Coffee"
 autowrap_mode = 2
 horizontal_alignment = 1
 
-[node name="Progress" type="ProgressBar" parent="Content/Layout"]
+[node name="Ingredients" type="GridContainer" parent="Content/Layout/Workspace/Body"]
+layout_mode = 2
+columns = 3
+
+[node name="Ingredient0" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Coffee"
+
+[node name="Ingredient1" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Water"
+
+[node name="Ingredient2" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Milk"
+
+[node name="Ingredient3" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Vanilla"
+
+[node name="Ingredient4" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Honey"
+
+[node name="Ingredient5" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tea"
+
+[node name="Ingredient6" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Berries"
+
+[node name="Ingredient7" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ice"
+
+[node name="Ingredient8" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cocoa"
+
+[node name="Progress" type="ProgressBar" parent="Content/Layout/Workspace/Body"]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 theme_override_styles/background = SubResource("track")
@@ -74,10 +168,6 @@ show_percentage = false
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 text = "Accept Order"
-
-[node name="SpaceBelow" type="Control" parent="Content/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
 
 [node name="Settings" type="Button" parent="Content/Layout"]
 layout_mode = 2

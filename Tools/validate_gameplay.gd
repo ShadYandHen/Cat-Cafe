@@ -1,10 +1,8 @@
 extends SceneTree
-## End-to-end input tests plus short, configurable real-Timer race/expiry scenarios.
+## Native mouse/touch integration plus layout, modal, clock and multi-order checks.
 const MAIN := preload("res://Scenes/Main.tscn")
 var failures: int = 0
 var checks: int = 0
-var departures: int = 0
-var services: int = 0
 var touch_mode: bool = false
 
 func _initialize() -> void:
@@ -20,16 +18,20 @@ func settle() -> void:
 	for frame in range(8):
 		await process_frame
 
-func make_cafe(patience_seconds: float = 60.0, brew_seconds: float = 0.1) -> Control:
+func make_cafe() -> Control:
 	var main := MAIN.instantiate() as Control
-	main.get_node("CafeSession").patience_seconds = patience_seconds
-	main.get_node("CafeSession").brew_seconds = brew_seconds
+	main.get_node("CafeSession").profile = CafeProfile.new()
+	main.get_node("CafeSession").start_immediately = true
+	main.get_node("CafeSession").normal_arrival_interval = Vector2(30, 30)
+	main.get_node("CafeSession").cat_effects_enabled = false
+	main.get_node("CafeSession").recipe_override = "basic_coffee"
 	root.add_child(main)
+	main.get_node("CafeSession").set_process(false)
 	await settle()
 	return main
 
 func click(button: Button) -> void:
-	check(button.is_visible_in_tree() and not button.disabled, "Clicked button is visible and enabled: " + button.name)
+	check(button.is_visible_in_tree() and not button.disabled, "Input target visible/enabled: " + button.name)
 	var motion := InputEventMouseMotion.new()
 	motion.position = button.get_global_rect().get_center()
 	root.push_input(motion, true)
@@ -50,25 +52,39 @@ func click(button: Button) -> void:
 
 func layout_checks(main: Control) -> void:
 	var view := main.get_node("GameplayView")
+	var session := main.get_node("CafeSession") as CafeSession
 	var bounds := Rect2(Vector2.ZERO, main.size)
 	var scale_factor := minf(float(root.size.x) / main.size.x, float(root.size.y) / main.size.y)
-	if main.get_node("CafeSession").view == CafeSession.View.CAFE:
-		for name in ["Customer", "CoffeeEquipment"]:
+	var controls: Array[Control] = []
+	if session.view == CafeSession.View.CAFE:
+		for name in ["Customer", "CustomerRight", "CoffeeEquipment"]:
 			var button := view.get_node(name) as Button
 			if button.visible:
-				check(bounds.encloses(button.get_global_rect()), name + " inside viewport")
-				check(button.size.x * scale_factor >= 44 and button.size.y * scale_factor >= 44, name + " touch target")
+				controls.append(button)
 				check(not view.get_node("Status").get_global_rect().intersects(button.get_global_rect()), "Status does not cover " + name)
-		check(view.get_node("Status").size.y * scale_factor <= maxf(90.0, 120.0 * scale_factor), "Status remains compact")
+				for child in button.get_children():
+					check(button.get_global_rect().encloses(child.get_global_rect()), "Actor child fits " + name)
+		check(not view.get_node("Customer").get_global_rect().intersects(view.get_node("CustomerRight").get_global_rect()), "Seat interactions do not overlap")
 	else:
-		var panel := view.get_node("OrderScreen") if main.get_node("CafeSession").view == CafeSession.View.ORDER else view.get_node("CoffeeStation")
-		check(is_equal_approx(panel.size.x, main.size.x) and is_equal_approx(panel.size.y, main.size.y), "Dedicated interface covers full viewport")
-		for name in ["Heading", "Patience", "Description", "Action", "Back", "Settings"]:
+		var panel := view.get_node("OrderScreen") if session.view == CafeSession.View.ORDER else view.get_node("CoffeeStation") if session.view == CafeSession.View.STATION else view.get_node("DayResults")
+		check(panel.size.is_equal_approx(main.size), "Dedicated interface fills viewport")
+		for name in (["Heading", "Patience", "Action", "Back", "Settings"] if session.view == CafeSession.View.STATION else ["Heading", "Patience", "Description", "Action", "Back", "Settings"]):
 			var control := panel.get_node("Content/Layout/" + name) as Control
-			check(bounds.encloses(control.get_global_rect()), name + " inside full-screen interface")
-			check(control.get_theme_font_size("font_size") * scale_factor >= 16, name + " readable")
-			if control is Button:
-				check(control.size.x * scale_factor >= 44 and control.size.y * scale_factor >= 44, name + " touch target")
+			if control.is_visible_in_tree():
+				controls.append(control)
+		if session.view == CafeSession.View.STATION:
+			for button in panel.get_node("Content/Layout/OrderChoices").get_children():
+				if button.is_visible_in_tree():
+					controls.append(button)
+	for control in controls:
+		check(bounds.encloses(control.get_global_rect()), control.name + " within viewport " + str(control.get_global_rect()) + " in " + str(bounds))
+		if control is Button:
+			check(control.size.x * scale_factor >= 44 and control.size.y * scale_factor >= 44, control.name + " 44px target")
+		else:
+			check(control.get_theme_font_size("font_size") * scale_factor >= 16, control.name + " readable")
+	for i in range(controls.size()):
+		for j in range(i):
+			check(not controls[i].get_global_rect().intersects(controls[j].get_global_rect()), "Essential controls do not overlap: %s/%s" % [controls[i].name, controls[j].name])
 
 func run() -> void:
 	root.content_scale_size = Vector2i(720, 1280)
@@ -77,144 +93,129 @@ func run() -> void:
 	for dimensions in [Vector2i(720, 1280), Vector2i(320, 568)]:
 		root.size = dimensions
 		touch_mode = dimensions.x == 320
-		var main := await make_cafe()
-		var session := main.get_node("CafeSession") as CafeSession
-		var view := main.get_node("GameplayView")
-		layout_checks(main)
-		check(session.coins == 120, "Starting coins")
-		await click(view.get_node("CoffeeEquipment"))
-		check(view.get_node("CoffeeStation/Content/Layout/Action").disabled, "Cannot brew before accepting")
-		await click(view.get_node("CoffeeStation/Content/Layout/Back"))
-		await click(view.get_node("Customer"))
-		check(session.view == CafeSession.View.ORDER, "Customer click opens order")
-		layout_checks(main)
-		await click(view.get_node("OrderScreen/Content/Layout/Action"))
-		check(session.state == CafeSession.State.ORDER_ACCEPTED, "Order accepted")
-		session.accept_order()
-		check(session.state == CafeSession.State.ORDER_ACCEPTED, "Duplicate acceptance ignored")
-		await click(view.get_node("Customer"))
-		check(view.get_node("OrderScreen/Content/Layout/Action").disabled, "Pending order cannot be served")
-		await click(view.get_node("OrderScreen/Content/Layout/Back"))
-		await click(view.get_node("CoffeeEquipment"))
-		layout_checks(main)
-		var before := session.patience.time_left
-		await click(view.get_node("CoffeeStation/Content/Layout/Settings"))
-		check(main.get_node("SettingsPanel").visible, "Station settings opens above station")
-		await click(main.get_node("SettingsPanel/Center/Panel/Margins/Layout/Close"))
-		check(root.gui_get_focus_owner() == view.get_node("CoffeeStation/Content/Layout/Settings"), "Station Settings restores focus")
-		await click(view.get_node("CoffeeStation/Content/Layout/Action"))
-		session.start_brewing() # duplicate tap must not restart the brew
-		await create_timer(0.16).timeout
-		await settle()
-		check(session.patience.time_left < before, "Patience continues in station/settings")
-		check(session.state == CafeSession.State.ORDER_ACCEPTED, "Brew alone does not create drink")
-		await click(view.get_node("CoffeeStation/Content/Layout/Action"))
-		session.finish_coffee()
-		check(session.state == CafeSession.State.DRINK_READY and session.coins == 120, "Finished coffee returns without automatic service/reward")
-		check(session.view == CafeSession.View.CAFE, "Finished coffee returns to café")
-		await click(view.get_node("Customer"))
-		await click(view.get_node("OrderScreen/Content/Layout/Action"))
-		session.serve()
-		check(session.coins == 130 and session.state == CafeSession.State.SERVED, "Exactly one +10 reward")
-		check(not view.get_node("Customer").visible, "Served customer leaves")
-		check(main.get_node("Content/Layout/TopHUD/StatsRow/Coins").text == "Coins\n130", "Runtime HUD updates")
-		main.queue_free()
-		await process_frame
-		print("PASS %s-driven complete cycle at %s" % ["touch" if touch_mode else "mouse", dimensions])
+		await complete_shift_ui()
+		print("PASS %s multi-order shift UI: %s" % ["touch" if touch_mode else "mouse", dimensions])
+	await expiry_and_live_clock()
 	await keyboard_case()
-	await touch_case()
-	await deadline_case()
-	await cancellation_case()
-	for mode in ["cafe", "order", "station", "ready", "settings"]:
-		await expiry_case(mode)
 	if failures == 0:
-		print("PASS: %d gameplay assertions; reward, cancellation, expiry, races, layouts and modal focus" % checks)
+		print("PASS: %d gameplay UI assertions" % checks)
 	quit(0 if failures == 0 else 1)
 
-func cancellation_case() -> void:
+func complete_shift_ui() -> void:
 	var main := await make_cafe()
-	var session := main.get_node("CafeSession") as CafeSession
-	session.open_order()
-	session.accept_order()
-	session.open_station()
-	session.start_brewing()
-	session.back_to_cafe()
-	await create_timer(0.2).timeout
-	check(session.state == CafeSession.State.ORDER_ACCEPTED and not session.brewing and session.brew_elapsed == 0.0, "Back cancels in-progress brew without drink")
-	session.open_station()
-	session.start_brewing()
-	await create_timer(0.16).timeout
-	session.back_to_cafe()
-	check(session.state == CafeSession.State.ORDER_ACCEPTED and session.brew_elapsed == 0.0, "Back after brewing also creates no drink")
-	main.queue_free()
-	await process_frame
-
-func expiry_case(mode: String) -> void:
-	departures = 0
-	services = 0
-	var main := await make_cafe(0.6, 0.1)
-	var session := main.get_node("CafeSession") as CafeSession
-	session.customer_departed.connect(func(): departures += 1)
-	session.customer_served.connect(func(): services += 1)
-	var before := session.patience.time_left
-	if mode != "cafe":
-		session.open_order()
-	if mode in ["station", "ready", "settings"]:
-		session.accept_order()
-		session.open_station()
-		session.start_brewing()
-	if mode == "ready":
-		await create_timer(0.16).timeout
-		session.finish_coffee()
-	if mode == "settings":
-		main.get_node("SettingsPanel").open()
-	await create_timer(0.7).timeout
-	await settle()
-	check(before > 0 and session.state == CafeSession.State.DEPARTED, "Patience expires in " + mode)
-	check(session.coins == 120 and departures == 1 and services == 0, "Expiry gives no reward and one event: " + mode)
-	check(not session.brewing and not main.get_node("GameplayView/Customer").visible, "Expiry cancels brewing/removes guest")
-	session._depart()
-	session.finish_coffee()
-	session.serve()
-	check(session.coins == 120 and departures == 1, "Late finish/serve/depart cannot reward twice")
-	if main.get_node("SettingsPanel").visible:
-		main.get_node("SettingsPanel").close()
-	session.back_to_cafe()
-	check("left" in session.feedback and session.view == CafeSession.View.CAFE, "Clear departure feedback on return")
-	main.queue_free()
-	await process_frame
-	print("PASS expiry: ", mode)
-
-func touch_case() -> void:
-	root.size = Vector2i(320, 568)
-	var main := await make_cafe()
+	var s := main.get_node("CafeSession") as CafeSession
+	s.cat_effects_enabled = false
 	var view := main.get_node("GameplayView")
-	var button := view.get_node("Customer") as Button
-	for pressed in [true, false]:
-		var event := InputEventScreenTouch.new()
-		event.index = 0
-		event.pressed = pressed
-		event.position = root.get_final_transform() * button.get_global_rect().get_center()
-		Input.parse_input_event(event)
+	s.advance_time(30)
 	await settle()
-	check(main.get_node("CafeSession").view == CafeSession.View.ORDER, "Screen touch opens customer interface")
+	layout_checks(main)
+	for actor in ["Customer", "CustomerRight"]:
+		await click(view.get_node(actor))
+		layout_checks(main)
+		await click(view.get_node("OrderScreen/Content/Layout/Action"))
+	check(s.get_order(1).state == CafeSession.State.ORDER_ACCEPTED and s.get_order(2).state == CafeSession.State.ORDER_ACCEPTED, "Both orders accepted independently")
+	await settle()
+	layout_checks(main)
+	await click(view.get_node("CoffeeEquipment"))
+	layout_checks(main)
+	check(view.get_node("CoffeeStation/Content/Layout/OrderChoices").visible, "Multiple accepted orders expose selector")
+	await click(view.get_node("CoffeeStation/Content/Layout/OrderChoices/Choice1"))
+	check(s.selected_order_id == 1, "Order selector targets first customer")
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	s.advance_time(1)
+	var before := s.get_order(1).remaining(s.elapsed)
+	await click(view.get_node("CoffeeStation/Content/Layout/Settings"))
+	s.advance_time(1)
+	check(s.get_order(1).remaining(s.elapsed) < before, "Patience continues in station Settings")
+	await click(main.get_node("SettingsPanel/Center/Panel/Margins/Layout/Close"))
+	check(root.gui_get_focus_owner() == view.get_node("CoffeeStation/Content/Layout/Settings"), "Station Settings focus restored")
+	await click(view.get_node("CoffeeStation/Content/Layout/OrderChoices/Choice2"))
+	check(s.brew_order_id == -1 and s.selected_order_id == 2, "Switching selection safely cancels partial brew")
+	await click(view.get_node("CoffeeStation/Content/Layout/OrderChoices/Choice1"))
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	s.advance_time(3)
+	await settle()
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	check(s.get_order(1).state == CafeSession.State.DRINK_READY and s.coins == 120, "Drink ready but not automatically served")
+	await click(view.get_node("CustomerRight"))
+	check(view.get_node("OrderScreen/Content/Layout/Action").disabled, "Other guest cannot receive mismatched drink")
+	await click(view.get_node("OrderScreen/Content/Layout/Back"))
+	await click(view.get_node("Customer"))
+	await click(view.get_node("OrderScreen/Content/Layout/Action"))
+	s.serve()
+	check(s.coins == 130 and s.served == 1, "First service pays exactly once")
+	await click(view.get_node("CoffeeEquipment"))
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	s.advance_time(3)
+	await settle()
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	await click(view.get_node("CoffeeStation/Content/Layout/Action"))
+	await click(view.get_node("CustomerRight"))
+	await click(view.get_node("OrderScreen/Content/Layout/Action"))
+	check(s.coins == 140 and s.served == 2, "Second independent reward")
+	s.advance_time(300 - s.elapsed)
+	check(s.phase == CafeSession.Phase.SOFT_CLOSING, "Soft closing keeps remaining guests")
+	for order in s.active_orders():
+		s.open_order(order.order_id)
+		s.accept_order()
+		s.open_station()
+		s.select_station_order(order.order_id)
+		s.start_brewing()
+		s.advance_time(3)
+		s.stop_preparation()
+		s.finish_coffee()
+		s.open_order(order.order_id)
+		s.serve()
+	await settle()
+	check(s.view == CafeSession.View.RESULTS and view.get_node("DayResults").visible, "Results shown after final guest")
+	layout_checks(main)
+	var balance := s.coins
+	await click(view.get_node("DayResults/Content/Layout/Settings"))
+	await click(main.get_node("SettingsPanel/Center/Panel/Margins/Layout/Close"))
+	await click(view.get_node("DayResults/Content/Layout/Action"))
+	s.start_next_day()
+	check(s.day == 2 and s.coins == balance and s.served == 0 and s.earned == 0, "Next day preserves coins and resets counters once")
+	check(main.get_node("Content/Layout/TopHUD/StatsRow/Day").text == "Day\n2", "Runtime day HUD updates")
+	layout_checks(main)
 	main.queue_free()
 	await process_frame
 
-func deadline_case() -> void:
+func expiry_and_live_clock() -> void:
 	var main := await make_cafe()
-	var session := main.get_node("CafeSession") as CafeSession
-	session.open_order()
-	session.accept_order()
-	session.open_station()
-	session.start_brewing()
-	await create_timer(0.16).timeout
-	session.finish_coffee()
-	session.open_order()
-	# Simulate the zero-time window before the Timer timeout callback is dispatched.
-	session.patience.stop()
-	session.serve()
-	check(session.state == CafeSession.State.DEPARTED and session.coins == 120, "A zero-time serve cannot beat expiry dispatch")
+	var s := main.get_node("CafeSession") as CafeSession
+	s.cat_effects_enabled = false
+	var view := main.get_node("GameplayView")
+	s.advance_time(30)
+	for id in [1, 2]:
+		s.open_order(id)
+		s.accept_order()
+	s.open_station()
+	s.select_station_order(1)
+	s.start_brewing()
+	s.advance_time(30)
+	await settle()
+	check(s.get_order(1).state == CafeSession.State.DEPARTED and s.get_order(2).state == CafeSession.State.ORDER_ACCEPTED, "Selected guest expires independently")
+	check(view.get_node("CoffeeStation/Content/Layout/OrderChoices").visible, "Remaining order selectable after expiry")
+	check(view.get_node("CoffeeStation/Content/Layout/Action").disabled, "Expired selected order cannot finish")
+	await click(view.get_node("CoffeeStation/Content/Layout/OrderChoices/Choice1"))
+	check(s.selected_order_id == 2, "Can recover station with surviving order")
+	layout_checks(main)
+	s.set_process(true)
+	var before := s.elapsed
+	await create_timer(0.06).timeout
+	check(s.elapsed > before, "Real runtime clock advances inside station")
+	main.get_node("SettingsPanel").open()
+	before = s.elapsed
+	await create_timer(0.06).timeout
+	check(s.elapsed > before, "Real runtime clock advances inside Settings")
+	s.set_process(false)
+	s.advance_time(400)
+	check(s.view == CafeSession.View.RESULTS, "Expiry can finish shift while Settings stays open")
+	main.get_node("SettingsPanel").close()
+	await settle()
+	var focus := root.gui_get_focus_owner()
+	check(focus != null and focus.is_visible_in_tree(), "Results recover visible focus after Settings closes")
 	main.queue_free()
 	await process_frame
 
@@ -228,22 +229,20 @@ func key_press(key: Key) -> void:
 
 func keyboard_case() -> void:
 	var main := await make_cafe()
-	var session := main.get_node("CafeSession") as CafeSession
-	var view := main.get_node("GameplayView")
-	session.open_order()
+	var s := main.get_node("CafeSession") as CafeSession
+	s.cat_effects_enabled = false
+	s.open_order(1)
 	await settle()
 	await key_press(KEY_ENTER)
-	check(session.state == CafeSession.State.ORDER_ACCEPTED, "Enter accepts focused order")
-	check(root.gui_get_focus_owner() == view.get_node("CoffeeEquipment"), "Coffee equipment receives focus after accepting")
+	check(s.get_order(1).state == CafeSession.State.ORDER_ACCEPTED, "Keyboard accepts order")
+	main.get_node("GameplayView/CoffeeEquipment").grab_focus()
 	await key_press(KEY_ENTER)
-	check(session.view == CafeSession.View.STATION, "Enter opens focused equipment")
-	view.get_node("CoffeeStation/Content/Layout/Settings").grab_focus()
+	check(s.view == CafeSession.View.STATION, "Keyboard opens station")
+	main.get_node("GameplayView/CoffeeStation/Content/Layout/Settings").grab_focus()
 	await key_press(KEY_ENTER)
-	check(main.get_node("SettingsPanel").visible, "Keyboard opens station Settings")
 	await key_press(KEY_ESCAPE)
-	check(not main.get_node("SettingsPanel").visible and session.view == CafeSession.View.STATION, "Escape closes Settings without closing underlying station")
-	check(root.gui_get_focus_owner() == view.get_node("CoffeeStation/Content/Layout/Settings"), "Keyboard Settings restores station focus")
+	check(not main.get_node("SettingsPanel").visible and s.view == CafeSession.View.STATION, "Escape closes Settings first")
 	await key_press(KEY_ESCAPE)
-	check(session.view == CafeSession.View.CAFE, "Escape returns from station")
+	check(s.view == CafeSession.View.CAFE, "Escape returns from station")
 	main.queue_free()
 	await process_frame

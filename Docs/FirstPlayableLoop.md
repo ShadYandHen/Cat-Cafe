@@ -1,6 +1,6 @@
 # First playable customer-service loop
 
-Open `project.godot` in Godot 4.6.3 and press F5. Play opens the café and starts one test customer immediately.
+This is a historical description of the original Step 4 loop (its Basic Coffee controls and fixed reward have been superseded by [Step 6 preparation](DrinkPreparation.md)), now extended into recurring multi-customer shifts. See [Café shifts](CafeDay.md) for the current play instructions, timing, order selection, results and tests.
 
 1. Tap/click the bunny **Guest** badge at the existing left seat.
 2. Choose **Accept Order** for Basic Coffee.
@@ -11,11 +11,11 @@ Open `project.godot` in Godot 4.6.3 and press F5. Play opens the café and start
 
 Patience starts at 60 seconds when the café opens, including time before accepting. It continues in the order screen, station, and Settings. On expiry the guest disappears, brewing/ready coffee cannot be rewarded, and the active interface explains what happened. Back/Escape returns safely to the café. Leaving the station before finishing discards preparation progress and creates no drink. Finish records the drink but does not serve it automatically.
 
-The prototype has one guest and one order per scene instance. Restart the game/reload the café scene to repeat; no automatic next guest, saving, daily timer, quality scores, cat movement, abilities, other drinks, or progression is implemented. Bottom navigation remains unchanged placeholders. Settings is available from both gameplay interfaces, with its existing close/focus behavior. Enter activates focused buttons; Escape closes Settings first, or returns from the current gameplay interface.
+The original prototype had one guest and one order per scene instance; Step 5 replaces that limitation with repeatable shifts. Its original scope excluded no automatic next guest, saving, daily timer, quality scores, cat movement, abilities, other drinks, or progression is implemented. Bottom navigation remains unchanged placeholders. Settings is available from both gameplay interfaces, with its existing close/focus behavior. Enter activates focused buttons; Escape closes Settings first, or returns from the current gameplay interface.
 
 ## Architecture
 
-- `Scenes/Gameplay/CafeSession.tscn` / `Scripts/Gameplay/cafe_session.gd`: scene-owned session state, one authoritative patience Timer, brew elapsed time, coins, transition guards, and signals. Exports: starting Coins 120, patience 60 seconds, reward 10, brew time 3 seconds.
+- `Scenes/Gameplay/CafeSession.tscn` / `Scripts/Gameplay/cafe_session.gd`: scene-owned session state, session clock, customer orders, coins, transition guards, and signals. Step 5 replaces the original single patience Timer with independent deadlines on the shared day clock. Current session defaults: starting Coins 120 and patience 60 seconds; recipes now own Coin values and preparation targets.
 - State flow: `WAITING_ORDER → ORDER_ACCEPTED → DRINK_READY → SERVED`. Any active state can transition to `DEPARTED` on expiry. Terminal states cannot earn another reward.
 - View flow: café ↔ order, café ↔ station; accepting/finishing/serving return to the café. Expiry keeps an open interface visible with departure feedback and Back enabled.
 - `GameplayView.tscn` / `gameplay_view.gd`: input wiring, runtime HUD binding, focus, responsive layout, and presentation. It reads the existing stage transform/seat marker to position stationary customer and equipment interactions.

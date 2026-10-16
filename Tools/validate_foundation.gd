@@ -60,6 +60,8 @@ func validate() -> void:
 	await scene_changed
 	var cafe_screen := current_scene as Control
 	check(cafe_screen.scene_file_path == "res://Scenes/Main.tscn", "Play opens café")
+	cafe_screen.get_node("CafeSession").start_next_day()
+	await settle()
 	for dimensions in VIEWPORTS:
 		root.size = dimensions
 		await settle()

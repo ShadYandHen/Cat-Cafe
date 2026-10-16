@@ -1,0 +1,74 @@
+[
+  {
+    "id": "brewing_equipment",
+    "name": "Brewing Equipment",
+    "description": "Shortens the target time at every drink station.",
+    "max_level": 3,
+    "costs": [
+      60,
+      120,
+      240
+    ],
+    "minimum_reputation": [
+      1,
+      2,
+      3
+    ],
+    "effect": "speed",
+    "value_per_level": 0.03
+  },
+  {
+    "id": "comfortable_seating",
+    "name": "Comfortable Seating",
+    "description": "Guests arrive with more starting patience.",
+    "max_level": 3,
+    "costs": [
+      50,
+      100,
+      200
+    ],
+    "minimum_reputation": [
+      1,
+      2,
+      3
+    ],
+    "effect": "patience",
+    "value_per_level": 0.03
+  },
+  {
+    "id": "better_ingredients",
+    "name": "Better Ingredients",
+    "description": "Adds quality points before tiers are determined.",
+    "max_level": 3,
+    "costs": [
+      70,
+      140,
+      280
+    ],
+    "minimum_reputation": [
+      2,
+      3,
+      4
+    ],
+    "effect": "quality",
+    "value_per_level": 2
+  },
+  {
+    "id": "service_training",
+    "name": "Service Training",
+    "description": "Increases ordinary tip amounts; premium tips stay separate.",
+    "max_level": 3,
+    "costs": [
+      60,
+      120,
+      240
+    ],
+    "minimum_reputation": [
+      2,
+      3,
+      4
+    ],
+    "effect": "tip",
+    "value_per_level": 0.05
+  }
+]

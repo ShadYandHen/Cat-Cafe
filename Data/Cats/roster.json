@@ -1,0 +1,113 @@
+[
+  {
+    "id": "mochi",
+    "name": "Mochi",
+    "passive": {
+      "kind": "patience",
+      "value": 0.05,
+      "description": "+5% starting patience"
+    },
+    "active": {
+      "kind": "care",
+      "parameters": {
+        "threshold": 0.3,
+        "restore": 0.1
+      },
+      "description": "Restore 10% original patience below 30%, once per guest crossing."
+    },
+    "cooldown": 30,
+    "artwork": "res://Assets/Characters/mochi_official.png"
+  },
+  {
+    "id": "fade",
+    "name": "Fade",
+    "passive": {
+      "kind": "tip",
+      "value": 0.05,
+      "description": "+5% ordinary tip amount"
+    },
+    "active": {
+      "kind": "speed",
+      "parameters": {
+        "speed": 0.2
+      },
+      "description": "+20% preparation speed for one draft."
+    },
+    "cooldown": 30,
+    "artwork": "res://Assets/Characters/fade_official.png"
+  },
+  {
+    "id": "momo",
+    "name": "Momo",
+    "passive": {
+      "kind": "quality",
+      "value": 5,
+      "description": "+5 quality points"
+    },
+    "active": {
+      "kind": "precision",
+      "parameters": {
+        "forgiveness": 0.15
+      },
+      "description": "15% wider timing scoring window for one draft."
+    },
+    "cooldown": 30,
+    "artwork": "res://Assets/Characters/momo_official.png"
+  },
+  {
+    "id": "odin",
+    "name": "Odin",
+    "passive": {
+      "kind": "tip",
+      "value": 0.05,
+      "description": "+5% ordinary tip amount"
+    },
+    "active": {
+      "kind": "premium",
+      "parameters": {
+        "tip": 0.15
+      },
+      "description": "Extra 15% of base price when serving Excellent or Perfect."
+    },
+    "cooldown": 30,
+    "artwork": "res://Assets/Characters/odin_official.png"
+  },
+  {
+    "id": "max",
+    "name": "Max",
+    "passive": {
+      "kind": "speed",
+      "value": 0.05,
+      "description": "+5% preparation speed"
+    },
+    "active": {
+      "kind": "speed",
+      "parameters": {
+        "speed": 0.15
+      },
+      "description": "+15% preparation speed for one draft."
+    },
+    "cooldown": 30,
+    "artwork": "res://Assets/Characters/max_official.png"
+  },
+  {
+    "id": "blaze",
+    "name": "Blaze",
+    "passive": {
+      "kind": "quality",
+      "value": 5,
+      "description": "+5 quality points"
+    },
+    "active": {
+      "kind": "finish",
+      "parameters": {
+        "minimum": 75,
+        "maximum": 94,
+        "score": 95
+      },
+      "description": "Convert an Excellent completed drink to Perfect (95)."
+    },
+    "cooldown": 30,
+    "artwork": "res://Assets/Characters/blaze_official.png"
+  }
+]

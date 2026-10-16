@@ -2,9 +2,13 @@
 
 A standalone Godot 4, GDScript, portrait-first 2D café foundation. Open `project.godot` in Godot 4.3 or newer and press **F5** to launch `Scenes/Title.tscn`. Choose **Play** to open the café; **F6** on `Scenes/Main.tscn` runs the café directly. Validated with Godot 4.6.3.
 
+## Play a café shift
+
+Play opens pre-day setup, where the team can be selected before starting a five-minute shift. Coins, Café Reputation Levels 1–50, completed days, and team selections save locally. See [persistent progression and saves](Docs/PlayerProfile.md). Upgrade and Decorate now open the [café shop](Docs/CafeShop.md): purchases, ownership and fixed display slots save permanently and are editable outside shifts. Customers recur at two seats during a shift. Accept a named drink, tap **Prepare**, select ingredients, stop the recipe’s timed process, assemble, then manually serve its matching guest. Eight recipes cover Coffee, Milk, Tea and Cold Drinks, with quality-based tips and daily Reputation XP. Rush runs from 2:00 to 3:00 elapsed; soft closing at 0:00 lets remaining orders finish. Results offer the next day and preserve session Coins. Cat Team is view-only during shifts and editable from results; three equipped cats contribute passives and only the active cat uses automatic abilities. See [cat team and abilities](Docs/CatTeam.md), [drink preparation](Docs/DrinkPreparation.md) and [café shifts](Docs/CafeDay.md).
+
 ## Foundation
 
-Native vector placeholders draw the cream-and-peach dollhouse, daylight window, coffee machine and grinder, preparation counter, seating nook, cat resting cushion, plant, shelf, and cups. There are no downloaded assets. The title screen features “Little Paws. Big Dreams.” and a simple original orange-tabby Mochi vector placeholder with a white muzzle, dark apron, coffee cup, and pink paw badge. Play opens the café. Settings on both screens opens a shared modal placeholder with Back/Escape closing and keyboard focus restoration. HUD values are static sample data and the five navigation buttons are focusable placeholders. No gameplay, character behavior, managers, or singletons are implemented.
+Native vector placeholders draw the cream-and-peach dollhouse, daylight window, coffee machine and grinder, preparation counter, seating nook, cat resting cushion, plant, shelf, and cups. There are no downloaded assets. The title screen features “Little Paws. Big Dreams.” and a supplied official Mochi PNG. Play opens the café. Settings on both screens opens a shared modal placeholder with Back/Escape closing and keyboard focus restoration. Coins, Café Reputation and cat selections now persist through the PlayerProfile autoload. The café loop remains scene owned, with no cat movement. Prepare and Cat Team are functional; Map remains a placeholder.
 
 ```text
 Title (configured launch scene)
@@ -28,7 +32,7 @@ Main (café Control)
         ├── FoundationNote (Label)
         └── BottomNavigation (reusable scene)
             └── Upgrade, Decorate, Prepare, CatTeam, Map
-Main also instances SettingsPanel above its content.
+Main also owns CafeSession and GameplayView (customers, order/station/results screens), with SettingsPanel above them.
 ```
 
 `Scenes/` separates main, environment, and UI scenes. `Scripts/Environment/` contains café drawing, and `Scripts/UI/` handles shared portrait layout, title navigation, settings interactions, and native storefront framing. `Assets/UI/` holds the shared rounded pastel theme; `Assets/Branding/` contains paw and icon assets, `Assets/Characters/` contains the Mochi placeholder, and `Assets/Environment/` and `Data/` reserve locations for later content. `Tools/` contains the foundation validation runner. Finished character art is intentionally deferred.
@@ -47,6 +51,12 @@ From this repository:
 godot --headless --path . --editor --import --quit
 godot --headless --path . --quit-after 5
 godot --headless --path . --script res://Tools/validate_foundation.gd
+godot --headless --path . --script res://Tools/validate_cafe_shop.gd
+godot --headless --path . --script res://Tools/validate_profile.gd
+godot --headless --path . --script res://Tools/validate_cats.gd
+godot --headless --path . --script res://Tools/validate_drinks.gd
+godot --headless --path . --script res://Tools/validate_day.gd
+godot --headless --path . --script res://Tools/validate_gameplay.gd
 ```
 
 In a restricted cloud sandbox, direct Godot's writable user directories outside the checkout first:
@@ -70,7 +80,7 @@ The title now uses a reusable editable `BrandLogo` scene: wooden sign, cream “
 
 The café retains fixed side-view geometry and named zones, now with warmer wood, peach walls, pink seating, a paw wall sign, and lamps. The HUD uses cream statistic cards. Each bottom navigation tile has a separate editable caption and original SVG icon; mint, pink/peach, and coffee-gold colors echo the references. The `Cafe/Stage` transform keeps future actor placement markers aligned with the uniformly scaled environment. These markers implement no behavior.
 
-All control states retain visible keyboard focus; Settings remains modal with Back/Escape closing. There are no third-party art downloads, concept sheets embedded into the interface, new managers, or gameplay systems. The source reference directory has `.gdignore` and is excluded from exports.
+All control states retain visible keyboard focus; Settings remains modal with Back/Escape closing. The concept sheets are not embedded into the interface. Gameplay remains separate from responsive UI code; the profile autoload retains permanent progress across scenes. The source reference directory has `.gdignore` and is excluded from exports.
 
 ## Step 3 — mobile UI polish
 
