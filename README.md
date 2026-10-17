@@ -101,3 +101,9 @@ godot --path . --audio-driver Dummy --script res://Tools/validate_foundation.gd 
 No café environment, mascot/icon artwork, concept references, gameplay, or project display settings changed in this step.
 
 Step 10A: [Golden Paw Lottery, collections, cosmetics and Level 50 reward rules](Docs/GoldenPawLottery.md).
+
+Step 10B: [Seasonal Pass, UTC challenges and permanent Reward Inbox](Docs/SeasonalPass.md).
+
+Step 11: [Full gameplay integration findings and isolated development tools](Docs/GameplayIntegration.md).
+
+Step 13A: [approved Seasonal XP, ingredient quality caps, and fractional-tip accounting](Docs/BalanceCorrections13A.md).

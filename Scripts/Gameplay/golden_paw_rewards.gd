@@ -43,3 +43,20 @@ static func apply(data: Dictionary, reward: Dictionary, catalog: RewardCatalog) 
 		if reward.item_id not in data[field]:
 			data[field].append(reward.item_id)
 	return true
+
+static func fixed_outcome(data: Dictionary, kind: String, payload: Dictionary, catalog: RewardCatalog, cafe: CafeCatalog) -> Dictionary:
+	# Inbox and lottery share the same candidate-state application/ownership path.
+	var result := {"category":"coins","item_id":"","coins":int(payload.coins),"duplicate_fallback":false,"fallback":""}
+	if kind=="coins":
+		return result
+	var entry := catalog.cosmetic(payload.item_id) if kind=="cosmetic" else cafe.decoration(payload.item_id)
+	if entry.is_empty():
+		return {}
+	result.category="exclusive" if entry.exclusive else "regular_cosmetics" if kind=="cosmetic" else "regular_decorations"
+	result.item_id=entry.id
+	if entry.id in data.owned_cosmetics or entry.id in data.owned_decorations:
+		# Fixed milestone duplicate policy, including exclusives: 500 Coins.
+		result.coins=500
+		result.duplicate_fallback=true
+		result.fallback="duplicate_unique"
+	return result

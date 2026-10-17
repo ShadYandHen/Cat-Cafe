@@ -9,7 +9,7 @@ signal phase_changed(phase: int)
 signal day_finished
 
 enum State { WAITING_ORDER, ORDER_ACCEPTED, DRINK_READY, SERVED, DEPARTED }
-enum View { CAFE, ORDER, STATION, RESULTS, TEAM, LOBBY, UPGRADES, DECORATE, REWARDS }
+enum View { CAFE, ORDER, STATION, RESULTS, TEAM, LOBBY, UPGRADES, DECORATE, REWARDS, SEASON }
 enum Phase { OPENING, RUSH, LATE_SERVICE, SOFT_CLOSING, RESULTS, PRE_DAY }
 const EPSILON := 0.000001
 
@@ -37,6 +37,7 @@ var ability_feedback: String = ""
 var draft_target_seconds: float = 0.0
 var draft_forgiveness: float = 0.0
 var _team_return_view: View = View.CAFE
+var _season_return_view: View = View.LOBBY
 var _shop_return_view: View = View.LOBBY
 var shop_feedback: String = ""
 var _shift_upgrade_bonuses: Dictionary = {}
@@ -354,15 +355,19 @@ func finish_coffee() -> void:
 	var order := get_order(selected_order_id)
 	var steps := 2 if selected_ingredients.is_empty() else 3
 	order.quality_score = DrinkQuality.score(order.recipe.ingredients, selected_ingredients, stopped_duration, draft_target_seconds, steps, draft_forgiveness)
-	order.quality_score = clampi(order.quality_score + roundi(gameplay_bonuses().quality), 0, 100)
-	if _active_kind("finish") and ability_remaining() <= EPSILON:
+	var complete := DrinkQuality.ingredients_complete(order.recipe.ingredients, selected_ingredients)
+	order.quality_score = DrinkQuality.final_score(order.quality_score, roundi(gameplay_bonuses().quality), complete)
+	if complete and _active_kind("finish") and ability_remaining() <= EPSILON:
 		var parameters: Dictionary = team.active_cat().active.parameters
 		if order.quality_score >= parameters.minimum and order.quality_score <= parameters.maximum:
 			order.quality_score = int(parameters.score)
 			_activate_ability(order.order_id)
+	# Final guard also protects against any ability tier override.
+	order.quality_score = DrinkQuality.final_score(order.quality_score, 0, complete)
 	var reward := DrinkQuality.reward(int(order.recipe.base_coins), order.quality_score, gameplay_bonuses().tip)
 	order.quality_tier = reward.tier
 	order.ordinary_tip = reward.tip
+	order.ordinary_bonus_units = reward.bonus_units
 	order.reward_coins = reward.coins
 	order.reward_xp = reward.xp
 	order.state = State.DRINK_READY
@@ -372,6 +377,10 @@ func finish_coffee() -> void:
 	changed.emit()
 
 func back_to_cafe() -> void:
+	if view==View.SEASON:
+		view=_season_return_view
+		changed.emit()
+		return
 	if view in [View.UPGRADES, View.DECORATE, View.REWARDS]:
 		view = _shop_return_view
 		changed.emit()
@@ -386,6 +395,13 @@ func back_to_cafe() -> void:
 	view = View.CAFE
 	changed.emit()
 
+func service_preview(order: CafeOrder) -> Dictionary:
+	var premium := 0
+	if _active_kind("premium") and ability_remaining() <= EPSILON and DrinkQuality.tier(order.quality_score) >= 2:
+		premium = floori(order.recipe.base_coins * team.active_cat().active.parameters.tip)
+	var carry: int = profile.tip_settlement(order.ordinary_bonus_units).coins
+	return {"premium": premium, "carry": carry, "coins": order.reward_coins + premium + carry}
+
 func serve() -> void:
 	if _serving or view != View.ORDER or not _available(selected_order_id):
 		return
@@ -393,12 +409,11 @@ func serve() -> void:
 	if order.state != State.DRINK_READY:
 		return
 	_serving = true
-	var premium := 0
-	if _active_kind("premium") and ability_remaining() <= EPSILON and DrinkQuality.tier(order.quality_score) >= 2:
-		premium = floori(order.recipe.base_coins * team.active_cat().active.parameters.tip)
-	var service_coins := order.reward_coins + premium
+	var preview := service_preview(order)
+	var premium: int = preview.premium
+	var service_coins: int = preview.coins
 	var previous_level := profile.level
-	if not profile.apply_service(shift_id, order.order_id, service_coins, order.reward_xp):
+	if not profile.apply_service(shift_id, order.order_id, service_coins - int(preview.carry), order.reward_xp, DrinkQuality.tier(order.quality_score), order.ordinary_bonus_units):
 		_serving = false
 		feedback = "Save failed; retry service."
 		changed.emit()
@@ -502,7 +517,7 @@ func _check_customer_care() -> bool:
 	return changed_patience
 
 func can_edit_team() -> bool:
-	return phase in [Phase.RESULTS, Phase.PRE_DAY]
+	return can_edit_cafe()
 
 func open_team() -> void:
 	if view not in [View.CAFE, View.RESULTS, View.LOBBY]:
@@ -586,4 +601,12 @@ func open_rewards() -> void:
 	if view not in [View.UPGRADES,View.DECORATE,View.REWARDS]:
 		_shop_return_view=view
 	view=View.REWARDS
+	changed.emit()
+
+func open_season() -> void:
+	if view not in [View.CAFE,View.LOBBY,View.RESULTS,View.UPGRADES,View.DECORATE,View.REWARDS]:
+		return
+	_season_return_view=view
+	profile.sync_season()
+	view=View.SEASON
 	changed.emit()

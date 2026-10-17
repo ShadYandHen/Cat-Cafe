@@ -4,6 +4,10 @@ Step 9 extends this to [schema 2 with café upgrades and decoration inventory](C
 
 Step 10A adds [schema 3, spendable tickets, resolved Level 50 rewards and collections](GoldenPawLottery.md). Deferred entitlement behavior described below is historical.
 
+Step 10B adds [schema 4, seasonal progression, challenges and permanent Inbox claims](SeasonalPass.md).
+
+Step 13A adds [schema 5 and persistent fractional ordinary-tip settlement](BalanceCorrections13A.md). Missing fractional state initializes to zero; historical service and seasonal receipts are preserved.
+
 ## Player flow
 
 Title → Play now opens **Before opening**, with Coins, Reputation progress, completed days, Start Day, Cat Team and Settings. Team selection works before Day 1 and between shifts; it is locked while a shift runs. No café time or customer arrivals occur before Start Day. A returning player always starts a fresh shift, with their saved economy and team. Unfinished customers, drinks, cooldowns and scene references are never restored.
@@ -86,3 +90,5 @@ No adoption, upgrades, cosmetics, decorations, prize redemption, Seasonal Pass o
 Godot 4.6.3 import and normal title startup passed. The persistence suite passed **196 assertions** headlessly and with native GL Compatibility, including mouse/touch at both target portrait sizes and storage failure/recovery tests. Regression suites passed **259 cat**, **1,111 drink**, **62 shift**, and **430 gameplay UI** assertions, plus foundation checks across eight viewport sizes. Two separate normal-startup processes verified automatic restore using isolated user storage. Screenshots of pre-Day 1 setup, team editing, level-up HUD, results and Level 50 cycle progress were inspected at 720×1280 and 320×568. The only native graphical warning was unsupported V-Sync configuration under Xvfb/Mesa.
 
 Protected artwork, references, shared UI/environment resources and the existing drink scoring implementation were checksum-verified unchanged. The only project-settings addition is the required profile autoload. Shorter café status messages prevent the new XP header from causing overlap with customer targets. No balance values changed.
+
+Step 11 [integration fixes](GameplayIntegration.md) require live scene ownership for new shift rewards, lock team changes while completion is pending, and resume calendar polling after successful recovery saves. Schema remains 4.

@@ -84,7 +84,22 @@
     "source": "seasonal",
     "slot": "cafe_badge",
     "color": "#f1c4b6",
-    "origin_season": "spring_preview",
+    "origin_season": "paw-season-0001",
+    "exclusive": true,
+    "lottery_eligible": true,
+    "eligibility_start": "season_released"
+  },
+  {
+    "id": "season_dream_badge",
+    "name": "Little Dreams Badge",
+    "category": "Caf\u00e9 badge",
+    "rarity": "exclusive",
+    "collection": "exclusive_cosmetics",
+    "asset": "",
+    "source": "seasonal",
+    "slot": "cafe_badge",
+    "color": "#d4b7dc",
+    "origin_season": "paw-season-0001",
     "exclusive": true,
     "lottery_eligible": true,
     "eligibility_start": "season_released"

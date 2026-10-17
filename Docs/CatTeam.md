@@ -37,9 +37,11 @@ Monetary calculations use whole Coins:
 
 `premium_tip = floor(base × Odin_active_tip_rate)` (calculated separately, only when Odin activates on service)
 
-`service_coins = base + ordinary_tip + premium_tip`
+`service_coins = base + ordinary_tip + settled_bonus_coins + premium_tip`
 
-Round once for the ordinary tip and once for the premium; never round the quality tip before applying passives. Premium is not amplified by passive tip bonuses. Small prototype prices can hide a 5% improvement through integer rounding. For base 100, Perfect, Fade + Odin equipped: ordinary tip is floor(15 × 1.10) = 16; active Odin can add 15 more, giving 131 total Coins. Ordinary reward previews exclude the conditional premium; service feedback and results include the amount actually paid. XP remains 5/8/12/15 by final quality tier.
+Round once for the ordinary tip and once for the premium; never round the quality tip before applying passives. Premium is not amplified by passive tip bonuses. Step 13A persists the unpaid incremental ordinary-tip bonus in fixed-point units,
+settling whole Coins on later successful services. It never carries base-tip or
+premium-tip fractions; see [the exact formula and transaction rules](BalanceCorrections13A.md). For base 100, Perfect, Fade + Odin equipped: ordinary tip is floor(15 × 1.10) = 16; active Odin can add 15 more, giving 131 total Coins. Service previews include the currently eligible premium and fractional settlement; service feedback and results use the amount actually paid. XP remains 5/8/12/15 by final quality tier.
 
 ## Active abilities and cooldown
 
@@ -52,7 +54,7 @@ Only a qualifying event consumes an activation. A shared absolute `ability_ready
 | Momo | Starting a valid timing preparation | +15% width of the timing scoring window for that draft |
 | Odin | Manually serving Excellent or Perfect while ready | Separate extra tip of 15% of base price |
 | Max | Starting a valid accepted-order preparation | +15% speed for that draft |
-| Blaze | Completed quality, after passives, is Excellent (75–94) | Convert to 95 before determining rewards |
+| Blaze | All required ingredients present and completed quality, after passives, is Excellent (75–94) | Convert to 95 before determining rewards |
 
 Mochi uses explicit threshold events in the existing chronological clock loop. Strictly below 30% is checked with a small floating-point tolerance. A crossing is consumed once even if cooldown is unavailable; it is not queued for later and restoration does not create another activation on that customer's next crossing. Simultaneous crossings use order creation order as a stable tie-break. Expired customers are resolved first and never revived. With Mochi equipped, the default original patience is 63s and restoration is 6.3s.
 

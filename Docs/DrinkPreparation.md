@@ -27,6 +27,12 @@ All categories share the accessible full-screen shell and deterministic timing c
 
 ## Scoring and service
 
+Step 13A applies an ingredient-completeness guard **after** raw scoring, quality
+bonuses and eligible Blaze conversion. Missing any required ingredient caps the
+final score at 74 (Good); Blaze cannot activate on an incomplete drink. Correct
+ingredients with imperfect timing remain eligible for higher tiers. Raw weights
+below are unchanged. See [current reward accounting](BalanceCorrections13A.md).
+
 `DrinkQuality.score` rounds the weighted sum to an integer from 0 to 100:
 
 - Ingredients (50 points): `(correct selections − extra selections) / required count`, clamped to 0–1. Missing ingredients and incorrect extras reduce quality. Duplicate inputs do not inflate scores.
@@ -40,13 +46,13 @@ All categories share the accessible full-screen shell and deterministic timing c
 | 75–94 | Excellent | 10% | 12 |
 | 95–100 | Perfect | 15% | 15 |
 
-Coins are integers: `tip = floor(base Coins × tip percentage)` and `reward = base + tip`. For example, Perfect Iced Cocoa gives 14 + 2 = 16 Coins and 15 XP. Small Good tips can round to zero; all values and this rounding policy are prototypes. XP is tracked for the day only, with no persistent leveling. Results count quality tiers of **served** drinks; expired/prepared-only drinks earn nothing.
+Coins are integers: `tip = floor(base Coins × tip percentage)` and `reward = base + tip`. For example, Perfect Iced Cocoa gives 14 + 2 = 16 Coins and 15 XP. Small Good tips can round to zero; all values and this rounding policy are prototypes. Reputation XP is applied to the permanent profile and tracked in day results. Results count quality tiers of **served** drinks; expired/prepared-only drinks earn nothing.
 
 ## State ownership and safety
 
 `CafeSession` remains scene-owned and authoritative. `CafeOrder` carries its recipe snapshot, quality and precomputed reward. Existing WAITING_ORDER → ORDER_ACCEPTED → DRINK_READY → SERVED states remain; any active order may expire. The selected draft tracks ingredients, start time and manually stopped duration. There are no new timers or autoloads.
 
-Switching orders, switching to another station, Back/Escape, departure of the selected guest, and day reset clear the unfinished draft. Ingredients lock after processing starts. A completed assembled drink remains attached to its order; it cannot be assigned to another guest. Ingredients/process cannot be changed for a ready drink. Serving marks the order terminal before granting Coins/XP, preventing duplicate rewards. Expiration invalidates ready drinks as well as unfinished preparation. Other customers' orders are unaffected.
+Switching orders, switching to another station, Back/Escape, departure of the selected guest, and day reset clear the unfinished draft. Ingredients lock after processing starts. A completed assembled drink remains attached to its order; it cannot be assigned to another guest. Ingredients/process cannot be changed for a ready drink. Serving durably commits Coins, XP, fractional ordinary-tip settlement and its receipt before marking the temporary order terminal, preventing duplicate rewards. Expiration invalidates ready drinks as well as unfinished preparation. Other customers' orders are unaffected.
 
 Five-minute days, phases, arrivals, independent patience, soft closing and next-day Coin carryover are preserved. Results add daily XP and served-quality counts, which reset on the next day. Settings never pauses the clock. Cancellation allows a fresh attempt while patience remains; assembled drinks cannot be remade in this prototype.
 

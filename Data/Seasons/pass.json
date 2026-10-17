@@ -1,0 +1,121 @@
+{
+  "anchor_utc": "2026-10-17T00:00:00",
+  "duration_days": 56,
+  "xp_per_tier": 500,
+  "maximum_tier": 50,
+  "day_xp": 200,
+  "daily_xp": 150,
+  "weekly_xp": 500,
+  "milestones": [
+    {
+      "tier": 5,
+      "type": "coins",
+      "amount": 250,
+      "item_id": "",
+      "exclusive": false
+    },
+    {
+      "tier": 10,
+      "type": "cosmetic",
+      "amount": 0,
+      "item_id": "strawberry_badge",
+      "exclusive": false
+    },
+    {
+      "tier": 15,
+      "type": "decoration",
+      "amount": 0,
+      "item_id": "mint_leaf_jar",
+      "exclusive": false
+    },
+    {
+      "tier": 20,
+      "type": "coins",
+      "amount": 500,
+      "item_id": "",
+      "exclusive": false
+    },
+    {
+      "tier": 25,
+      "type": "cosmetic",
+      "amount": 0,
+      "item_id": "mint_ribbon",
+      "exclusive": false
+    },
+    {
+      "tier": 30,
+      "type": "decoration",
+      "amount": 0,
+      "item_id": "peach_blossom_vase",
+      "exclusive": false
+    },
+    {
+      "tier": 35,
+      "type": "coins",
+      "amount": 750,
+      "item_id": "",
+      "exclusive": false
+    },
+    {
+      "tier": 40,
+      "type": "cosmetic",
+      "amount": 0,
+      "item_id": "spring_blossom_badge",
+      "exclusive": true
+    },
+    {
+      "tier": 45,
+      "type": "decoration",
+      "amount": 0,
+      "item_id": "spring_heart_mat",
+      "exclusive": true
+    },
+    {
+      "tier": 50,
+      "type": "cosmetic",
+      "amount": 0,
+      "item_id": "season_dream_badge",
+      "exclusive": true
+    }
+  ],
+  "daily": [
+    {
+      "id": "daily_service",
+      "label": "Serve 5 drinks",
+      "metric": "served",
+      "target": 5
+    },
+    {
+      "id": "daily_quality",
+      "label": "Serve 3 Good-or-better drinks",
+      "metric": "good",
+      "target": 3
+    },
+    {
+      "id": "daily_coins",
+      "label": "Earn 100 service Coins",
+      "metric": "coins",
+      "target": 100
+    }
+  ],
+  "weekly": [
+    {
+      "id": "weekly_days",
+      "label": "Complete 5 caf\u00e9 days",
+      "metric": "days",
+      "target": 5
+    },
+    {
+      "id": "weekly_service",
+      "label": "Serve 30 drinks",
+      "metric": "served",
+      "target": 30
+    },
+    {
+      "id": "weekly_quality",
+      "label": "Serve 10 Excellent-or-better drinks",
+      "metric": "excellent",
+      "target": 10
+    }
+  ]
+}

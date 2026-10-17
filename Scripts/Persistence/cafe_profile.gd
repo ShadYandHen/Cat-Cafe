@@ -2,13 +2,15 @@ class_name CafeProfile
 extends RefCounted
 ## Authoritative permanent state. Candidate -> durable save -> publish memory/signals.
 signal changed
-const VERSION := 3
+const VERSION := 5
 const MAX_INTEGER := 9007199254740991 # Exactly representable in JSON/browser numbers.
 const CAT_IDS := ["mochi", "fade", "momo", "odin", "max", "blaze"]
 # Separate Level 50 cycle policy (GoldenPawRewards implements the exact buckets).
 const DEFERRED_REWARD_POLICY := {"coins": {"weight": 50, "amount": 1000}, "cosmetic": {"weight": 25, "rarity": "regular", "exhausted_coins": 500}, "decoration": {"weight": 25, "rarity": "regular", "exhausted_coins": 500}}
 static var cafe_catalog := CafeCatalog.new()
 static var reward_catalog := RewardCatalog.new()
+static var season_catalog := SeasonCatalog.new()
+var clock: Callable = func() -> int: return int(Time.get_unix_time_from_system())
 var reward_rng := RandomNumberGenerator.new()
 var last_roll_results: Array = []
 var _data: Dictionary = defaults()
@@ -39,7 +41,7 @@ var writable: bool:
 	get: return store == null or not store.blocked
 
 static func defaults() -> Dictionary:
-	return {"schema_version": VERSION, "coins": 120, "level": 1, "xp": 0,
+	return {"schema_version": VERSION, "ordinary_tip_remainder": 0, "coins": 120, "level": 1, "xp": 0,
 		"completed_days": 0, "team": ["mochi", "fade", "max"], "cycle_xp": 0,
 		"cycles": 0, "welcome_granted": false, "pending_welcome_ticket": false,
 		"pending_cycle_tickets": 0, "next_shift_id": 1, "open_shift_id": 0,
@@ -48,6 +50,7 @@ static func defaults() -> Dictionary:
 		"lottery_tickets":0, "welcome_processed":false, "resolved_cycles":0,
 		"cycle_rewards":[], "owned_cosmetics":[], "equipped_cosmetics":{"cafe_badge":""},
 		"lottery_history":[], "next_roll_sequence":1, "released_seasons":[],
+		"seasonal":SeasonalProgress.empty_state(),
 		"equipped_decorations": {"wall_display":"", "shelf_display":"", "floor_display":""}}
 
 static func valid_integer(value: Variant, minimum: int = 0, maximum: int = MAX_INTEGER) -> bool:
@@ -57,10 +60,15 @@ static func required_xp(current_level: int) -> int:
 	return 1000 if current_level >= 50 else 75 + 20 * (current_level - 1)
 
 static func normalize(value: Variant) -> Dictionary:
+	if not season_catalog.errors.is_empty():
+		return {"ok":false,"reason":"season catalog unavailable: "+str(season_catalog.errors)}
 	if not reward_catalog.errors.is_empty():
 		return {"ok":false,"reason":"reward catalog unavailable"}
 	if not cafe_catalog.errors.is_empty():
 		return {"ok": false, "reason": "café catalog unavailable: " + str(cafe_catalog.errors)}
+	var catalog_problem := season_catalog.validate_reward_items(reward_catalog,cafe_catalog)
+	if not catalog_problem.is_empty():
+		return {"ok":false,"reason":catalog_problem}
 	if not value is Dictionary:
 		return {"ok": false, "reason": "profile is not an object"}
 	var version = value.get("schema_version", 0)
@@ -82,6 +90,9 @@ static func normalize(value: Variant) -> Dictionary:
 		if not valid_integer(data[key]):
 			return {"ok": false, "reason": "invalid " + key}
 		data[key] = int(data[key])
+	if not valid_integer(data.ordinary_tip_remainder, 0, DrinkQuality.TIP_SCALE - 1):
+		return {"ok": false, "reason": "invalid ordinary_tip_remainder"}
+	data.ordinary_tip_remainder = int(data.ordinary_tip_remainder)
 	if data.level < 1 or data.level > 50 or data.next_shift_id < 1 or data.open_shift_id >= data.next_shift_id:
 		return {"ok": false, "reason": "invalid level/shift identity"}
 	for key in ["welcome_granted","pending_welcome_ticket","shift_completed"]:
@@ -121,6 +132,9 @@ static func normalize(value: Variant) -> Dictionary:
 	var rewards_check := _normalize_rewards(data, notes, int(version))
 	if not rewards_check.is_empty():
 		return {"ok":false,"reason":rewards_check}
+	var seasonal_problem := SeasonalProgress.normalize(data.seasonal,season_catalog)
+	if not seasonal_problem.is_empty():
+		return {"ok":false,"reason":seasonal_problem}
 	return {"ok": true, "data": data, "diagnostic": " ".join(notes), "repaired": not notes.is_empty()}
 
 static func _advance_reputation(data: Dictionary, grant: int) -> void:
@@ -154,8 +168,18 @@ func open(save_path: String) -> void:
 func snapshot() -> Dictionary:
 	return _data.duplicate(true)
 
-func _commit(candidate: Dictionary) -> bool:
+func _commit(candidate: Dictionary, transaction_time: int = -1) -> bool:
 	last_error = ""
+	var now := seasonal_now() if transaction_time<0 else transaction_time
+	if candidate.get("seasonal") is Dictionary and valid_integer(candidate.seasonal.get("last_time")):
+		candidate.seasonal.last_time=maxi(now,int(candidate.seasonal.last_time))
+	var initial := normalize(candidate)
+	if not initial.ok:
+		last_error=initial.reason
+		return false
+	candidate=initial.data
+	_sync_season_candidate(candidate,now)
+	candidate.seasonal.last_time=maxi(now,int(candidate.seasonal.last_time))
 	var verified := normalize(candidate)
 	if not verified.ok:
 		last_error = verified.reason
@@ -196,18 +220,31 @@ func begin_shift() -> int:
 	_active_shift_id = int(candidate.open_shift_id)
 	return _active_shift_id
 
-func apply_service(shift_id: int, order_id: int, coin_reward: Variant, xp_reward: Variant) -> bool:
-	if shift_id <= 0 or shift_id != int(_data.open_shift_id) or _data.shift_completed or order_id <= 0 or order_id in _data.served_order_ids:
+func tip_settlement(bonus_units: int) -> Dictionary:
+	var units := int(_data.ordinary_tip_remainder) + bonus_units
+	return {"coins": units / DrinkQuality.TIP_SCALE, "remainder": units % DrinkQuality.TIP_SCALE}
+
+func apply_service(shift_id: int, order_id: int, coin_reward: Variant, xp_reward: Variant, quality_tier: int = -1, ordinary_bonus_units: Variant = 0) -> bool:
+	if shift_id <= 0 or shift_id != _active_shift_id or shift_id != int(_data.open_shift_id) or _data.shift_completed or order_id <= 0 or order_id in _data.served_order_ids:
 		last_error = "Duplicate or stale service transaction."
 		return false
-	if not valid_integer(coin_reward) or int(coin_reward) > MAX_INTEGER - coins or not valid_integer(xp_reward) or int(xp_reward) > MAX_INTEGER - xp - cycle_xp:
+	if not valid_integer(ordinary_bonus_units, 0, DrinkQuality.TIP_SCALE - 1):
+		last_error = "Invalid ordinary-tip bonus."
+		return false
+	var settlement := tip_settlement(int(ordinary_bonus_units))
+	if quality_tier not in [-1,0,1,2,3] or not valid_integer(coin_reward) or int(coin_reward) > MAX_INTEGER - coins - int(settlement.coins) or not valid_integer(xp_reward) or int(xp_reward) > MAX_INTEGER - xp - cycle_xp:
 		last_error = "Invalid service reward."
 		return false
 	var candidate := snapshot()
-	candidate.coins += int(coin_reward)
+	var actual_coins := int(coin_reward) + int(settlement.coins)
+	candidate.coins += actual_coins
+	candidate.ordinary_tip_remainder = settlement.remainder
 	_advance_reputation(candidate,int(xp_reward))
 	candidate.served_order_ids.append(order_id)
-	var saved := _commit(candidate)
+	var now := seasonal_now()
+	_sync_season_candidate(candidate,now)
+	SeasonalProgress.event(candidate.seasonal,{"served":1,"coins":actual_coins,"good":int(quality_tier>=1),"excellent":int(quality_tier>=2)},now,season_catalog)
+	var saved := _commit(candidate,now)
 	if saved:
 		resolve_level50_rewards()
 	return saved
@@ -219,15 +256,24 @@ func complete_shift(shift_id: int) -> bool:
 	if _data.shift_completed:
 		release_shift(shift_id)
 		return true # Idempotent: already committed, do not increment again.
+	if shift_id != _active_shift_id:
+		last_error="Abandoned or reloaded shifts cannot complete."
+		return false
 	var candidate := snapshot()
 	candidate.completed_days += 1
 	candidate.shift_completed = true
-	if not _commit(candidate):
+	var now := seasonal_now()
+	_sync_season_candidate(candidate,now)
+	SeasonalProgress.event(candidate.seasonal,{"days":1},now,season_catalog)
+	if not _commit(candidate,now):
 		return false
 	release_shift(shift_id)
 	return true
 
 func set_team(slots: Array) -> bool:
+	if _cafe_transaction or not can_manage_cafe():
+		last_error="Team changes require an inactive shift and writable profile."
+		return false
 	if slots.size() != 3:
 		return false
 	var seen: Array = []
@@ -448,7 +494,7 @@ static func _normalize_rewards(data: Dictionary, notes: Array[String], version: 
 static func _valid_reward(reward: Variant) -> bool:
 	if not reward is Dictionary:
 		return false
-	return reward.get("category") in ["coins","regular_cosmetics","regular_decorations","exclusive"] and reward.get("item_id") is String and valid_integer(reward.get("coins")) and reward.get("duplicate_fallback") is bool and reward.get("fallback") in ["","exhausted_pool","duplicate_regular"]
+	return reward.get("category") in ["coins","regular_cosmetics","regular_decorations","exclusive"] and reward.get("item_id") is String and valid_integer(reward.get("coins")) and reward.get("duplicate_fallback") is bool and reward.get("fallback") in ["","exhausted_pool","duplicate_regular","duplicate_unique"]
 
 var tickets: int:
 	get: return int(_data.lottery_tickets)
@@ -460,6 +506,8 @@ func resolve_level50_rewards() -> bool:
 	if pending_tickets==0:
 		return true
 	var candidate := snapshot()
+	var now := seasonal_now()
+	_sync_season_candidate(candidate,now)
 	var rng_before := reward_rng.state
 	var processed := 0
 	if candidate.pending_welcome_ticket:
@@ -479,7 +527,7 @@ func resolve_level50_rewards() -> bool:
 		candidate.cycle_rewards.append(reward)
 		processed+=1
 	_cafe_transaction=true
-	var success := _commit(candidate)
+	var success := _commit(candidate,now)
 	_cafe_transaction=false
 	if not success:
 		reward_rng.state=rng_before
@@ -495,6 +543,8 @@ func roll_lottery(count: int, expected_sequence: int) -> bool:
 		return false
 	var candidate := snapshot()
 	var outcomes: Array=[]
+	var now := seasonal_now()
+	_sync_season_candidate(candidate,now)
 	var rng_before := reward_rng.state
 	for i in range(count):
 		var reward := GoldenPawRewards.outcome(candidate,reward_catalog,cafe_catalog.decorations,reward_rng)
@@ -510,7 +560,7 @@ func roll_lottery(count: int, expected_sequence: int) -> bool:
 	while candidate.lottery_history.size()>50:
 		candidate.lottery_history.pop_front()
 	_cafe_transaction=true
-	var success := _commit(candidate)
+	var success := _commit(candidate,now)
 	_cafe_transaction=false
 	if success:
 		last_roll_results=outcomes.duplicate(true)
@@ -544,3 +594,56 @@ func equip_cosmetic(id: String) -> bool:
 
 func collections() -> Dictionary:
 	return reward_catalog.collection_summary(_data,cafe_catalog.decorations)
+
+func seasonal_now() -> int:
+	# No server clock in this local prototype. Persisted watermark prevents resets
+	# from moving backwards after an ordinary device-clock correction.
+	return maxi(maxi(0,int(clock.call())),int(_data.seasonal.last_time))
+
+func _sync_season_candidate(candidate: Dictionary, now: int) -> void:
+	SeasonalProgress.sync(candidate.seasonal,now,season_catalog,reward_catalog.all_items(cafe_catalog.decorations),candidate.released_seasons)
+
+func sync_season() -> bool:
+	if _cafe_transaction or not writable:
+		return false
+	var candidate := snapshot()
+	_sync_season_candidate(candidate,seasonal_now())
+	if candidate==_data:
+		return true
+	return _commit(candidate)
+
+func seasonal_state() -> Dictionary:
+	return _data.seasonal.duplicate(true)
+
+func claim_inbox(id: String) -> bool:
+	if _cafe_transaction or not can_manage_cafe():
+		last_error="View only: reward claims require an inactive shift"
+		return false
+	var candidate := snapshot()
+	var now := seasonal_now()
+	_sync_season_candidate(candidate,now)
+	var entitlement: Dictionary={}
+	for entry in candidate.seasonal.inbox:
+		if entry.id==id:
+			entitlement=entry
+			break
+	if entitlement.is_empty() or entitlement.claimed:
+		last_error="Reward is missing, unearned or already claimed"
+		return false
+	var reward := GoldenPawRewards.fixed_outcome(candidate,entitlement.type,entitlement.payload,reward_catalog,cafe_catalog)
+	if reward.is_empty() or not GoldenPawRewards.apply(candidate,reward,reward_catalog):
+		last_error="Reward unavailable or Coin balance limit; entitlement retained"
+		return false
+	entitlement.claimed=true
+	entitlement.claim_receipt="claim:"+id
+	entitlement.claimed_at=now
+	entitlement.outcome=reward
+	var seasons: Array=candidate.seasonal.history.duplicate()
+	seasons.append(candidate.seasonal.current)
+	for season in seasons:
+		if season.id==entitlement.season:
+			season.claimed.append(int(entitlement.tier))
+	_cafe_transaction=true
+	var success := _commit(candidate,now)
+	_cafe_transaction=false
+	return success

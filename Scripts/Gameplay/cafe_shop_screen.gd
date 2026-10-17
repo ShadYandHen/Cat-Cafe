@@ -30,6 +30,7 @@ func setup(model: CafeSession, owner_screen: Control) -> void:
 	$Content/Layout/Settings.pressed.connect(cafe_screen.get_node("SettingsPanel").open)
 	$Content/Layout/Back.pressed.connect(session.back_to_cafe)
 	_button($Content/Layout/Scroll/Body,"GoldenPaw",session.open_rewards).text="Golden Paw Lottery\nCollections · Level 50"
+	_button($Content/Layout/Scroll/Body,"SeasonPass",session.open_season).text="Season Pass & Reward Inbox"
 	for entry in CafeProfile.cafe_catalog.upgrades:
 		var card := VBoxContainer.new()
 		card.name=entry.id

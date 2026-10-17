@@ -8,6 +8,7 @@ var state: int = 0
 var original_patience: float
 var care_crossed: bool = false
 var ordinary_tip: int = 0
+var ordinary_bonus_units: int = 0
 var premium_tip: int = 0
 var deadline: float
 var requested_drink: String = "Basic Coffee"

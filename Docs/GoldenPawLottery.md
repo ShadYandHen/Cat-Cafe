@@ -7,6 +7,8 @@ can be viewed at any level. Spending and equipment changes are blocked during a
 shift by both the UI/session and the authoritative profile. The café clock keeps
 running while viewing rewards and Settings.
 
+Step 10B implements [season calendars, Inbox and seasonal-exclusive release](SeasonalPass.md). Schema 4 is current; the details below describe the original Step 10A baseline.
+
 ## Catalogs
 
 `Data/Rewards/cosmetics.json` defines:

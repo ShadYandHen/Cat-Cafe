@@ -12,6 +12,7 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 	$CatTeamScreen.setup(session, screen)
 	$CafeShopScreen.setup(session, screen)
 	$RewardsScreen.setup(session, screen)
+	$SeasonScreen.setup(session, screen)
 	screen.get_node("Content/Layout/BottomNavigation/Map").pressed.connect(session.open_rewards)
 	screen.get_node("Content/Layout/BottomNavigation/Map").tooltip_text="Golden Paw Lottery & Collections"
 	for panel in [$DayLobby,$DayResults]:
@@ -76,7 +77,7 @@ func _process(_delta: float) -> void:
 			_focus_default()
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if session != null and session.view in [CafeSession.View.ORDER, CafeSession.View.STATION, CafeSession.View.TEAM, CafeSession.View.UPGRADES, CafeSession.View.DECORATE, CafeSession.View.REWARDS] and event.is_action_pressed("ui_cancel"):
+	if session != null and session.view in [CafeSession.View.ORDER, CafeSession.View.STATION, CafeSession.View.TEAM, CafeSession.View.UPGRADES, CafeSession.View.DECORATE, CafeSession.View.REWARDS, CafeSession.View.SEASON] and event.is_action_pressed("ui_cancel"):
 		session.back_to_cafe()
 		get_viewport().set_input_as_handled()
 
@@ -138,7 +139,7 @@ func _refresh() -> void:
 					station_action.text = "Start " + selected.recipe.action
 					station_action.disabled = selected.recipe.station != session.station_category
 			CafeSession.State.DRINK_READY:
-				order_panel.get_node("Description").text = title + "\n%s · %d/100\n+%d Coins · +%d XP" % [selected.quality_tier, selected.quality_score, selected.reward_coins, selected.reward_xp]
+				order_panel.get_node("Description").text = title + "\n%s · %d/100\n+%d Coins · +%d XP" % [selected.quality_tier, selected.quality_score, session.service_preview(selected).coins, selected.reward_xp]
 				order_action.text = "Serve drink"
 				order_action.disabled = false
 				station.get_node("Workspace/Body/Description").text = title + "\nAlready ready. Tap this guest to serve."
@@ -184,6 +185,8 @@ func _refresh() -> void:
 	results.get_node("Back").hide()
 	results.get_node("Patience").text = "Day %d complete" % session.day
 	results.get_node("Description").text = "Served: %d · Lost: %d\nCoins: +%d · Total: %d\nReputation XP: +%d\nOkay %d · Good %d\nExcellent %d · Perfect %d" % [session.served, session.lost, session.earned, session.coins, session.reputation_earned, session.quality_counts[0], session.quality_counts[1], session.quality_counts[2], session.quality_counts[3]]
+	if not session.completion_pending:
+		results.get_node("Description").text += "\nCafé day: +%d Seasonal XP (up to cap)" % int(CafeProfile.season_catalog.data.day_xp)
 	results.get_node("Description").text += "\n%s" % session.profile.progress_text()
 	if session.profile.level > session.starting_level:
 		results.get_node("Description").text += "\nGained %d café levels!" % (session.profile.level-session.starting_level)
@@ -210,6 +213,9 @@ func _refresh() -> void:
 		$DayResults.visible = session.view == CafeSession.View.RESULTS
 		$CatTeamScreen.visible = session.view == CafeSession.View.TEAM
 		$DayLobby.visible = session.view == CafeSession.View.LOBBY
+		$SeasonScreen.visible = session.view == CafeSession.View.SEASON
+		if $SeasonScreen.visible:
+			$SeasonScreen.on_open()
 		$RewardsScreen.visible = session.view == CafeSession.View.REWARDS
 		if $RewardsScreen.visible:
 			$RewardsScreen.on_open()
@@ -250,6 +256,9 @@ func _actor(seat: int) -> Button:
 	return $Customer if seat == 0 else $CustomerRight
 
 func _focus_default() -> void:
+	if session.view == CafeSession.View.SEASON:
+		$SeasonScreen/Content/Layout/Back.grab_focus()
+		return
 	if session.view == CafeSession.View.REWARDS:
 		$RewardsScreen/Content/Layout/Back.grab_focus()
 		return

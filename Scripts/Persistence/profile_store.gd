@@ -115,4 +115,5 @@ func write_data(data: Dictionary) -> bool:
 	if error != OK:
 		last_error = "Cannot promote staged save: " + error_string(error)
 		return false
+	recovery_required=false
 	return true

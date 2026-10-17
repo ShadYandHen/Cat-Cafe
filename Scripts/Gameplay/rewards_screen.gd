@@ -43,6 +43,7 @@ func setup(model: CafeSession, owner_screen: Control) -> void:
 	$Content/Layout/Back.pressed.connect(session.back_to_cafe)
 	lottery_body=VBoxContainer.new()
 	$Content/Layout/Scroll/Body.add_child(lottery_body)
+	button(lottery_body,"Season Pass & Reward Inbox",session.open_season)
 	label(lottery_body,"50%: 500 Coins · 24%: regular cosmetic\n24%: regular decoration · 2%: exclusive\nTen independent rolls. No rarity guarantee.")
 	resolve=button(lottery_body,"Resolve pending Level 50 rewards",resolve_pending)
 	roll_one=button(lottery_body,"Roll 1 · 1 ticket",roll.bind(1))

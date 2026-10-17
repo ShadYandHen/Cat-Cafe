@@ -200,7 +200,7 @@ func migration_and_failures() -> void:
 	write_raw(path,old)
 	var p := CafeProfile.new()
 	p.open(path)
-	check(p.tickets==4 and p.pending_tickets==0 and p.snapshot().schema_version==3,"Schema 2 pending entitlements migrate and resolve")
+	check(p.tickets==4 and p.pending_tickets==0 and p.snapshot().schema_version==CafeProfile.VERSION,"Schema 2 pending entitlements migrate and resolve")
 	check(p.completed_days==12 and p.cycle_xp==40 and p.upgrade_level("brewing_equipment")==2 and p.equipped_decorations().wall_display=="pink_paw_plaque" and p.team_slots==old.team,"Migration preserves old permanent progression and slots")
 	var resolved := p.snapshot()
 	for i in range(3):
