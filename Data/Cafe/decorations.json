@@ -9,7 +9,13 @@
     "asset": "",
     "slot": "wall_display",
     "symbol": "paw",
-    "color": "#e9a4bb"
+    "color": "#e9a4bb",
+    "collection": "regular_decorations",
+    "origin_season": "",
+    "exclusive": false,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "shop_or_reward"
   },
   {
     "id": "morning_mug_sign",
@@ -21,7 +27,13 @@
     "asset": "",
     "slot": "wall_display",
     "symbol": "mug",
-    "color": "#edc19b"
+    "color": "#edc19b",
+    "collection": "regular_decorations",
+    "origin_season": "",
+    "exclusive": false,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "shop_or_reward"
   },
   {
     "id": "mint_leaf_jar",
@@ -33,7 +45,13 @@
     "asset": "",
     "slot": "shelf_display",
     "symbol": "leaf",
-    "color": "#b8d3bd"
+    "color": "#b8d3bd",
+    "collection": "regular_decorations",
+    "origin_season": "",
+    "exclusive": false,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "shop_or_reward"
   },
   {
     "id": "peach_blossom_vase",
@@ -45,7 +63,13 @@
     "asset": "",
     "slot": "shelf_display",
     "symbol": "flower",
-    "color": "#f1c4b6"
+    "color": "#f1c4b6",
+    "collection": "regular_decorations",
+    "origin_season": "",
+    "exclusive": false,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "shop_or_reward"
   },
   {
     "id": "cozy_star_mat",
@@ -57,7 +81,13 @@
     "asset": "",
     "slot": "floor_display",
     "symbol": "star",
-    "color": "#f2da9b"
+    "color": "#f2da9b",
+    "collection": "regular_decorations",
+    "origin_season": "",
+    "exclusive": false,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "shop_or_reward"
   },
   {
     "id": "strawberry_heart_cushion",
@@ -69,6 +99,66 @@
     "asset": "",
     "slot": "floor_display",
     "symbol": "heart",
-    "color": "#e9a4bb"
+    "color": "#e9a4bb",
+    "collection": "regular_decorations",
+    "origin_season": "",
+    "exclusive": false,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "shop_or_reward"
+  },
+  {
+    "id": "golden_paw_lantern",
+    "name": "Golden Paw Lantern",
+    "category": "Exclusive accents",
+    "price": 1,
+    "minimum_reputation": 50,
+    "rarity": "exclusive",
+    "asset": "",
+    "slot": "wall_display",
+    "symbol": "paw",
+    "color": "#f2da9b",
+    "collection": "exclusive_decorations",
+    "origin_season": "",
+    "exclusive": true,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "lottery"
+  },
+  {
+    "id": "dream_star_planter",
+    "name": "Dream Star Planter",
+    "category": "Exclusive accents",
+    "price": 1,
+    "minimum_reputation": 50,
+    "rarity": "exclusive",
+    "asset": "",
+    "slot": "shelf_display",
+    "symbol": "star",
+    "color": "#f2da9b",
+    "collection": "exclusive_decorations",
+    "origin_season": "",
+    "exclusive": true,
+    "lottery_eligible": true,
+    "eligibility_start": "immediate",
+    "source": "lottery"
+  },
+  {
+    "id": "spring_heart_mat",
+    "name": "Spring Heart Mat",
+    "category": "Exclusive accents",
+    "price": 1,
+    "minimum_reputation": 50,
+    "rarity": "exclusive",
+    "asset": "",
+    "slot": "floor_display",
+    "symbol": "heart",
+    "color": "#f2da9b",
+    "collection": "exclusive_decorations",
+    "origin_season": "spring_preview",
+    "exclusive": true,
+    "lottery_eligible": true,
+    "eligibility_start": "season_released",
+    "source": "seasonal"
   }
 ]

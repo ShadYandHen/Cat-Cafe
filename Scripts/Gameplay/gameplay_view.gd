@@ -11,6 +11,11 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 	session = cafe_session
 	$CatTeamScreen.setup(session, screen)
 	$CafeShopScreen.setup(session, screen)
+	$RewardsScreen.setup(session, screen)
+	screen.get_node("Content/Layout/BottomNavigation/Map").pressed.connect(session.open_rewards)
+	screen.get_node("Content/Layout/BottomNavigation/Map").tooltip_text="Golden Paw Lottery & Collections"
+	for panel in [$DayLobby,$DayResults]:
+		panel.get_node("Content/Layout/Shop").text="Shop & Golden Paw"
 	var display := DecorationDisplay.new()
 	display.name="DecorationDisplay"
 	screen.get_node("Content/Layout/Cafe/Stage").add_child(display)
@@ -71,7 +76,7 @@ func _process(_delta: float) -> void:
 			_focus_default()
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if session != null and session.view in [CafeSession.View.ORDER, CafeSession.View.STATION, CafeSession.View.TEAM, CafeSession.View.UPGRADES, CafeSession.View.DECORATE] and event.is_action_pressed("ui_cancel"):
+	if session != null and session.view in [CafeSession.View.ORDER, CafeSession.View.STATION, CafeSession.View.TEAM, CafeSession.View.UPGRADES, CafeSession.View.DECORATE, CafeSession.View.REWARDS] and event.is_action_pressed("ui_cancel"):
 		session.back_to_cafe()
 		get_viewport().set_input_as_handled()
 
@@ -205,6 +210,9 @@ func _refresh() -> void:
 		$DayResults.visible = session.view == CafeSession.View.RESULTS
 		$CatTeamScreen.visible = session.view == CafeSession.View.TEAM
 		$DayLobby.visible = session.view == CafeSession.View.LOBBY
+		$RewardsScreen.visible = session.view == CafeSession.View.REWARDS
+		if $RewardsScreen.visible:
+			$RewardsScreen.on_open()
 		$CafeShopScreen.visible = session.view in [CafeSession.View.UPGRADES,CafeSession.View.DECORATE]
 		if $CafeShopScreen.visible:
 			$CafeShopScreen.on_open()
@@ -242,6 +250,9 @@ func _actor(seat: int) -> Button:
 	return $Customer if seat == 0 else $CustomerRight
 
 func _focus_default() -> void:
+	if session.view == CafeSession.View.REWARDS:
+		$RewardsScreen/Content/Layout/Back.grab_focus()
+		return
 	if session.view in [CafeSession.View.UPGRADES,CafeSession.View.DECORATE]:
 		$CafeShopScreen/Content/Layout/Back.grab_focus()
 		return

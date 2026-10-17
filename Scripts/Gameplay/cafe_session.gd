@@ -9,7 +9,7 @@ signal phase_changed(phase: int)
 signal day_finished
 
 enum State { WAITING_ORDER, ORDER_ACCEPTED, DRINK_READY, SERVED, DEPARTED }
-enum View { CAFE, ORDER, STATION, RESULTS, TEAM, LOBBY, UPGRADES, DECORATE }
+enum View { CAFE, ORDER, STATION, RESULTS, TEAM, LOBBY, UPGRADES, DECORATE, REWARDS }
 enum Phase { OPENING, RUSH, LATE_SERVICE, SOFT_CLOSING, RESULTS, PRE_DAY }
 const EPSILON := 0.000001
 
@@ -372,7 +372,7 @@ func finish_coffee() -> void:
 	changed.emit()
 
 func back_to_cafe() -> void:
-	if view in [View.UPGRADES, View.DECORATE]:
+	if view in [View.UPGRADES, View.DECORATE, View.REWARDS]:
 		view = _shop_return_view
 		changed.emit()
 		return
@@ -579,3 +579,11 @@ func equip_decoration(slot: String, id: String) -> bool:
 		changed.emit()
 		return false
 	return _cafe_result(profile.equip_decoration(slot,id),"Display saved")
+
+func open_rewards() -> void:
+	if view not in [View.CAFE,View.LOBBY,View.RESULTS,View.UPGRADES,View.DECORATE,View.REWARDS]:
+		return
+	if view not in [View.UPGRADES,View.DECORATE,View.REWARDS]:
+		_shop_return_view=view
+	view=View.REWARDS
+	changed.emit()

@@ -99,3 +99,5 @@ godot --path . --audio-driver Dummy --script res://Tools/validate_foundation.gd 
 ```
 
 No café environment, mascot/icon artwork, concept references, gameplay, or project display settings changed in this step.
+
+Step 10A: [Golden Paw Lottery, collections, cosmetics and Level 50 reward rules](Docs/GoldenPawLottery.md).

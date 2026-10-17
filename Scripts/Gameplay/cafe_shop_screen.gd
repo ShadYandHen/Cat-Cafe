@@ -29,6 +29,7 @@ func setup(model: CafeSession, owner_screen: Control) -> void:
 	$Content/Layout/Tabs/Decorate.pressed.connect(session.open_shop.bind(true))
 	$Content/Layout/Settings.pressed.connect(cafe_screen.get_node("SettingsPanel").open)
 	$Content/Layout/Back.pressed.connect(session.back_to_cafe)
+	_button($Content/Layout/Scroll/Body,"GoldenPaw",session.open_rewards).text="Golden Paw Lottery\nCollections · Level 50"
 	for entry in CafeProfile.cafe_catalog.upgrades:
 		var card := VBoxContainer.new()
 		card.name=entry.id
@@ -122,6 +123,9 @@ func refresh() -> void:
 		var owned := session.profile.owns_decoration(entry.id)
 		card.get_node("State").text="%d Coins · Requires Level %d\n%s" % [int(entry.price),int(entry.minimum_reputation),"Owned" if owned else offer.reason]
 		card.get_node("Buy").text="Owned" if owned else "Buy · %d Coins" % int(entry.price)
+		if entry.rarity=="exclusive":
+			card.get_node("State").text="Exclusive reward · "+("Owned" if owned else "Golden Paw Lottery or future seasonal release")
+			card.get_node("Buy").text="Owned" if owned else "Reward only"
 		card.get_node("Buy").disabled=not editable or not offer.allowed
 		var equipped: bool = slots[entry.slot]==entry.id
 		card.get_node("Equip").text="Displayed" if equipped else "Display: "+CafeCatalog.SLOT_NAMES[CafeCatalog.SLOT_IDS.find(entry.slot)]

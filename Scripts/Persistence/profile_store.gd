@@ -5,6 +5,7 @@ var path: String
 var diagnostic: String = ""
 var last_error: String = ""
 var blocked: bool = false
+var recovery_required: bool = false # Loading recovery data must not trigger automatic writes.
 var validator: Callable
 
 func _init(save_path: String, validate: Callable) -> void:
@@ -26,6 +27,7 @@ func _read(file_path: String) -> Dictionary:
 
 func load_data() -> Dictionary:
 	var primary := _read(path)
+	recovery_required = not primary.ok and primary.get("reason","")!="missing"
 	if primary.get("future", false):
 		blocked = true
 		diagnostic = "Save uses a newer schema. File preserved; saving is disabled."
@@ -34,6 +36,7 @@ func load_data() -> Dictionary:
 		if primary.get("repaired", false):
 			var complete_backup := _read(path + ".bak")
 			if complete_backup.ok and not complete_backup.get("repaired", false):
+				recovery_required = true
 				diagnostic = "Profile fields required repair; recovered complete backup. Original retained."
 				return complete_backup.data
 		diagnostic = primary.get("diagnostic", "")
@@ -46,6 +49,7 @@ func load_data() -> Dictionary:
 		diagnostic = "Backup uses a newer schema. Files preserved; saving is disabled."
 		return {}
 	if backup.ok:
+		recovery_required = true
 		diagnostic = "Recovered backup: primary save is %s. Original retained until archived on next save." % primary.reason
 		return backup.data
 	if primary.reason != "missing" or backup.reason != "missing":

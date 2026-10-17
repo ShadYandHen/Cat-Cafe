@@ -16,6 +16,15 @@ func marker_rect(slot: String) -> Rect2:
 func _draw() -> void:
 	if profile==null:
 		return
+	# A café badge indicator, never painted onto the official character illustrations.
+	var badge: String=profile.snapshot().equipped_cosmetics.cafe_badge
+	if not badge.is_empty():
+		var center := Vector2(475,370)
+		draw_circle(center,20,Color("805b46"))
+		draw_circle(center,17,Color(CafeProfile.reward_catalog.cosmetic(badge).color))
+		draw_circle(center+Vector2(0,5),7,Color("fff6e7"))
+		for offset in [Vector2(-10,-4),Vector2(-3,-10),Vector2(5,-9),Vector2(11,-3)]:
+			draw_circle(center+offset,3,Color("fff6e7"))
 	for slot in CafeCatalog.SLOT_IDS:
 		var id: String=profile.equipped_decorations()[slot]
 		if id.is_empty():

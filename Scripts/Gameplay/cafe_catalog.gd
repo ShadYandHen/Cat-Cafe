@@ -69,7 +69,7 @@ static func validate_decoration(entry: Variant) -> String:
 		return "Invalid optional decoration asset"
 	if entry.get("symbol","") not in ["paw","mug","leaf","flower","star","heart"] or not entry.get("color") is String or not Color.html_is_valid(entry.color):
 		return "Invalid placeholder symbol/color"
-	return ""
+	return RewardCatalog.validate_item(entry,false)
 
 func upgrade(id: String) -> Dictionary:
 	for entry in upgrades:
@@ -108,6 +108,8 @@ func decoration_offer(id: String, state: Dictionary) -> Dictionary:
 	var entry := decoration(id)
 	if entry.is_empty():
 		return {"allowed":false,"reason":"Invalid decoration ID"}
+	if entry.get("source", "shop_or_reward") != "shop_or_reward":
+		return {"allowed":false,"reason":"Reward only","cost":0,"required":50,"owned":id in state.owned_decorations}
 	var result := purchase_gate(int(entry.minimum_reputation),int(state.level),int(state.coins),int(entry.price),id in state.owned_decorations)
 	result.merge({"cost":int(entry.price),"required":int(entry.minimum_reputation),"owned":id in state.owned_decorations})
 	return result

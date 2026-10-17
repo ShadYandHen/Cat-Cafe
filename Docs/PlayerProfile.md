@@ -2,6 +2,8 @@
 
 Step 9 extends this to [schema 2 with café upgrades and decoration inventory](CafeShop.md). The details below also record the original Step 8 behavior.
 
+Step 10A adds [schema 3, spendable tickets, resolved Level 50 rewards and collections](GoldenPawLottery.md). Deferred entitlement behavior described below is historical.
+
 ## Player flow
 
 Title → Play now opens **Before opening**, with Coins, Reputation progress, completed days, Start Day, Cat Team and Settings. Team selection works before Day 1 and between shifts; it is locked while a shift runs. No café time or customer arrivals occur before Start Day. A returning player always starts a fresh shift, with their saved economy and team. Unfinished customers, drinks, cooldowns and scene references are never restored.

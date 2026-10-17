@@ -79,21 +79,21 @@ func defaults_and_progression() -> void:
 		check(not p.grant_xp(invalid) and p.snapshot()==before, "Invalid XP rejected: " + str(invalid))
 	var maxed := CafeProfile.new()
 	check(maxed.grant_xp(27195+2500) and maxed.level==50 and maxed.xp==0 and maxed.cycles==2 and maxed.cycle_xp==500, "One grant supports all levels and multiple max-level cycles")
-	check(maxed.pending_tickets==3 and maxed.snapshot().welcome_granted and maxed.snapshot().pending_welcome_ticket, "One welcome plus two cycle ticket entitlements")
-	check(maxed.grant_xp(500) and maxed.cycles==3 and maxed.cycle_xp==0 and maxed.pending_tickets==4, "Exactly 1000 completes one repeat cycle")
-	check(maxed.grant_xp(0) and maxed.pending_tickets==4, "Zero grant cannot duplicate entitlements")
+	check(maxed.tickets==3 and maxed.snapshot().welcome_granted and maxed.snapshot().welcome_processed, "One welcome plus two cycle ticket entitlements")
+	check(maxed.grant_xp(500) and maxed.cycles==3 and maxed.cycle_xp==0 and maxed.tickets==4, "Exactly 1000 completes one repeat cycle")
+	check(maxed.grant_xp(0) and maxed.tickets==4, "Zero grant cannot duplicate entitlements")
 	var entitlements := maxed.pending_entitlements()
-	check(entitlements.welcome_id=="level50-welcome" and entitlements.cycle_first==1 and entitlements.cycle_last==3 and entitlements.cycle_count==3, "Entitlements have stable compact identities")
+	check(entitlements.welcome_id=="" and entitlements.cycle_last==3 and entitlements.cycle_count==0 and maxed.snapshot().resolved_cycles==3, "Entitlements have stable compact identities")
 	maxed.begin_shift()
-	check(maxed.pending_tickets==4 and maxed.cycles==3, "Starting a shift cannot duplicate or reset entitlements")
+	check(maxed.tickets==4 and maxed.cycles==3, "Starting a shift cannot duplicate or reset entitlements")
 	for i in range(10):
 		var normalized := CafeProfile.normalize(maxed.snapshot())
-		check(normalized.ok and normalized.data.pending_cycle_tickets==3 and normalized.data.pending_welcome_ticket, "Repeated normalization cannot repeat welcome/cycle rewards")
+		check(normalized.ok and normalized.data.pending_cycle_tickets==0 and normalized.data.welcome_processed and normalized.data.lottery_tickets==4, "Repeated normalization cannot repeat welcome/cycle rewards")
 	var almost := CafeProfile.new()
 	almost.grant_xp(27194)
 	check(almost.level==49 and almost.xp==1034, "Level 49 exact pre-cap boundary")
 	almost.grant_xp(1)
-	check(almost.level==50 and almost.cycle_xp==0 and almost.pending_tickets==1, "Level 50 welcome has no premature repeat cycle")
+	check(almost.level==50 and almost.cycle_xp==0 and almost.tickets==1, "Level 50 welcome has no premature repeat cycle")
 
 func storage_and_recovery() -> void:
 	var path := path_for("roundtrip")
@@ -107,10 +107,10 @@ func storage_and_recovery() -> void:
 	check(FileAccess.file_exists(path+".bak") and not FileAccess.file_exists(path+".tmp"), "Valid backup retained, staged file promoted")
 	check(not loaded.apply_service(shift,1,16,15) and loaded.coins==136, "Reloaded receipt rejects duplicate service")
 	loaded.grant_xp(27195+2100)
-	var pending := loaded.pending_tickets
+	var pending := loaded.tickets
 	for i in range(4):
 		loaded = load_profile(path)
-		check(loaded.level==50 and loaded.pending_tickets==pending and loaded.cycles==2, "Durable welcome/cycle entitlements survive reload")
+		check(loaded.level==50 and loaded.tickets==pending and loaded.cycles==2, "Durable welcome/cycle entitlements survive reload")
 	# Primary corrupted: recover last valid checkpoint and retain the bad bytes.
 	var backup_text := FileAccess.get_file_as_string(path+".bak")
 	write_raw(path,"{broken")

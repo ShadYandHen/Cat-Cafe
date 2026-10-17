@@ -130,6 +130,9 @@ func decorations_and_slots() -> void:
 	var p := fixture()
 	var balance := p.coins
 	for entry in CafeProfile.cafe_catalog.decorations:
+		if entry.rarity=="exclusive":
+			check(not p.purchase_decoration(entry.id),"Exclusive reward cannot be bought")
+			continue
 		check(p.purchase_decoration(entry.id),"Decoration purchase "+entry.id)
 		balance-=int(entry.price)
 		var committed := p.snapshot()
@@ -165,6 +168,11 @@ func migration_and_failures() -> void:
 	p.grant_xp(2500)
 	var old := p.snapshot()
 	old.schema_version=1
+	# Represent a true Step 8 save with deferred rewards, not a v3 outcome snapshot.
+	old.pending_welcome_ticket=true
+	old.pending_cycle_tickets=2
+	for key in ["lottery_tickets","welcome_processed","resolved_cycles","cycle_rewards","owned_cosmetics","equipped_cosmetics","lottery_history","next_roll_sequence","released_seasons"]:
+		old.erase(key)
 	old.completed_days=7
 	old.team=["odin","momo","blaze"]
 	for key in ["upgrades","owned_decorations","equipped_decorations"]:
@@ -175,11 +183,11 @@ func migration_and_failures() -> void:
 	var migrated := CafeProfile.new()
 	migrated.open(legacy_path)
 	for key in old:
-		if key!="schema_version":
+		if key not in ["schema_version","pending_welcome_ticket","pending_cycle_tickets","coins"]:
 			check(migrated.snapshot()[key]==old[key],"Version 1 migration preserves "+key)
-	check(migrated.snapshot().schema_version==2 and migrated.upgrade_level("brewing_equipment")==0 and migrated.snapshot().owned_decorations.is_empty(),"Version 1 adds empty upgrade/inventory fields")
-	check(migrated.pending_tickets==3 and migrated.purchase_upgrade("brewing_equipment",0),"Migration preserves Level 50 entitlements and permits purchase")
-	check(reload(migrated).pending_tickets==3 and reload(migrated).completed_days==7,"Migration and purchase remain durable")
+	check(migrated.snapshot().schema_version==CafeProfile.VERSION and migrated.upgrade_level("brewing_equipment")==0 and migrated.snapshot().owned_decorations.size()<=2,"Version 1 adds empty upgrade/inventory fields")
+	check(migrated.tickets==3 and migrated.purchase_upgrade("brewing_equipment",0),"Migration preserves Level 50 entitlements and permits purchase")
+	check(reload(migrated).tickets==3 and reload(migrated).completed_days==7,"Migration and purchase remain durable")
 	var malformed := migrated.snapshot()
 	malformed.upgrades={"brewing_equipment":999,"comfortable_seating":-1,"better_ingredients":1.5,"unknown":3}
 	malformed.owned_decorations=["pink_paw_plaque","pink_paw_plaque","unknown",7]

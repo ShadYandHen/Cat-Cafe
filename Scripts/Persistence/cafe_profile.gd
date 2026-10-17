@@ -2,12 +2,15 @@ class_name CafeProfile
 extends RefCounted
 ## Authoritative permanent state. Candidate -> durable save -> publish memory/signals.
 signal changed
-const VERSION := 2
+const VERSION := 3
 const MAX_INTEGER := 9007199254740991 # Exactly representable in JSON/browser numbers.
 const CAT_IDS := ["mochi", "fade", "momo", "odin", "max", "blaze"]
-# Reserved policy only: no rolls, inventory creation, or redemption in Step 8.
+# Separate Level 50 cycle policy (GoldenPawRewards implements the exact buckets).
 const DEFERRED_REWARD_POLICY := {"coins": {"weight": 50, "amount": 1000}, "cosmetic": {"weight": 25, "rarity": "regular", "exhausted_coins": 500}, "decoration": {"weight": 25, "rarity": "regular", "exhausted_coins": 500}}
 static var cafe_catalog := CafeCatalog.new()
+static var reward_catalog := RewardCatalog.new()
+var reward_rng := RandomNumberGenerator.new()
+var last_roll_results: Array = []
 var _data: Dictionary = defaults()
 var _active_shift_id: int = 0 # Runtime lock; an interrupted shift is never restored.
 var _cafe_transaction: bool = false
@@ -42,6 +45,9 @@ static func defaults() -> Dictionary:
 		"pending_cycle_tickets": 0, "next_shift_id": 1, "open_shift_id": 0,
 		"shift_completed": false, "served_order_ids": [],
 		"upgrades": {}, "owned_decorations": [],
+		"lottery_tickets":0, "welcome_processed":false, "resolved_cycles":0,
+		"cycle_rewards":[], "owned_cosmetics":[], "equipped_cosmetics":{"cafe_badge":""},
+		"lottery_history":[], "next_roll_sequence":1, "released_seasons":[],
 		"equipped_decorations": {"wall_display":"", "shelf_display":"", "floor_display":""}}
 
 static func valid_integer(value: Variant, minimum: int = 0, maximum: int = MAX_INTEGER) -> bool:
@@ -51,6 +57,8 @@ static func required_xp(current_level: int) -> int:
 	return 1000 if current_level >= 50 else 75 + 20 * (current_level - 1)
 
 static func normalize(value: Variant) -> Dictionary:
+	if not reward_catalog.errors.is_empty():
+		return {"ok":false,"reason":"reward catalog unavailable"}
 	if not cafe_catalog.errors.is_empty():
 		return {"ok": false, "reason": "café catalog unavailable: " + str(cafe_catalog.errors)}
 	if not value is Dictionary:
@@ -110,6 +118,9 @@ static func normalize(value: Variant) -> Dictionary:
 		return {"ok": false, "reason": "inconsistent reward-cycle state"}
 	if data.pending_welcome_ticket and not data.welcome_granted:
 		return {"ok": false, "reason": "inconsistent welcome entitlement"}
+	var rewards_check := _normalize_rewards(data, notes, int(version))
+	if not rewards_check.is_empty():
+		return {"ok":false,"reason":rewards_check}
 	return {"ok": true, "data": data, "diagnostic": " ".join(notes), "repaired": not notes.is_empty()}
 
 static func _advance_reputation(data: Dictionary, grant: int) -> void:
@@ -135,6 +146,9 @@ func open(save_path: String) -> void:
 	_data = loaded if not loaded.is_empty() else defaults()
 	diagnostic = store.diagnostic
 	last_error = ""
+	reward_rng.randomize()
+	if writable and pending_tickets>0 and not store.recovery_required:
+		resolve_level50_rewards()
 	changed.emit()
 
 func snapshot() -> Dictionary:
@@ -160,7 +174,10 @@ func grant_xp(amount: Variant) -> bool:
 		return false
 	var candidate := snapshot()
 	_advance_reputation(candidate,int(amount))
-	return _commit(candidate)
+	var saved := _commit(candidate)
+	if saved:
+		resolve_level50_rewards()
+	return saved
 
 func begin_shift() -> int:
 	if _active_shift_id != 0:
@@ -190,7 +207,10 @@ func apply_service(shift_id: int, order_id: int, coin_reward: Variant, xp_reward
 	candidate.coins += int(coin_reward)
 	_advance_reputation(candidate,int(xp_reward))
 	candidate.served_order_ids.append(order_id)
-	return _commit(candidate)
+	var saved := _commit(candidate)
+	if saved:
+		resolve_level50_rewards()
+	return saved
 
 func complete_shift(shift_id: int) -> bool:
 	if shift_id <= 0 or shift_id != int(_data.open_shift_id):
@@ -366,3 +386,161 @@ func equip_decoration(slot: String, id: String) -> bool:
 	var success := _commit(candidate)
 	_cafe_transaction=false
 	return success
+
+# Step 10A: a compact cycle serial range and durable outcomes prevent replay.
+static func _normalize_rewards(data: Dictionary, notes: Array[String], version: int) -> String:
+	if version<3:
+		data.resolved_cycles=int(data.cycles)-int(data.pending_cycle_tickets)
+		data.welcome_processed=data.welcome_granted and not data.pending_welcome_ticket
+		data.lottery_tickets=data.resolved_cycles+int(data.welcome_processed)
+	for key in ["lottery_tickets","resolved_cycles","next_roll_sequence"]:
+		if not valid_integer(data[key],1 if key=="next_roll_sequence" else 0):
+			return "Invalid reward counter: "+key
+		data[key]=int(data[key])
+	if not data.welcome_processed is bool or (data.welcome_processed and (not data.welcome_granted or data.pending_welcome_ticket)):
+		return "Inconsistent processed welcome reward"
+	if data.resolved_cycles+data.pending_cycle_tickets!=data.cycles:
+		return "Inconsistent processed cycle range"
+	if data.lottery_tickets != data.resolved_cycles+int(data.welcome_processed)-(data.next_roll_sequence-1):
+		return "Inconsistent issued/spent ticket accounting"
+	# Step 10B will write released season IDs; no release action exists in this build.
+	if not data.released_seasons is Array:
+		return "Invalid season metadata"
+	for id in data.released_seasons:
+		if not id is String:
+			return "Invalid season identifier"
+	var owned: Array=[]
+	if data.owned_cosmetics is Array:
+		for id in data.owned_cosmetics:
+			if id is String and not reward_catalog.cosmetic(id).is_empty() and id not in owned:
+				owned.append(id)
+	owned.sort()
+	if owned!=data.owned_cosmetics:
+		notes.append("Repaired cosmetic ownership")
+	data.owned_cosmetics=owned
+	var equipped = data.equipped_cosmetics.get("cafe_badge","") if data.equipped_cosmetics is Dictionary else ""
+	if not equipped is String or (not equipped.is_empty() and equipped not in owned):
+		equipped=""
+	var slots := {"cafe_badge":equipped}
+	if slots!=data.equipped_cosmetics:
+		notes.append("Repaired cosmetic equipment")
+	data.equipped_cosmetics=slots
+	if not data.cycle_rewards is Array or not data.lottery_history is Array or data.lottery_history.size()>50:
+		return "Invalid reward history"
+	var last_cycle := 0
+	for reward in data.cycle_rewards:
+		if not _valid_reward(reward) or not valid_integer(reward.get("cycle_id"),1,data.resolved_cycles) or int(reward.cycle_id)<=last_cycle:
+			return "Invalid cycle receipt"
+		reward.coins=int(reward.coins)
+		reward.cycle_id=int(reward.cycle_id)
+		last_cycle=int(reward.cycle_id)
+	var expected: int=maxi(1,data.next_roll_sequence-data.lottery_history.size())
+	for reward in data.lottery_history:
+		if not _valid_reward(reward) or not valid_integer(reward.get("sequence"),expected,expected):
+			return "Invalid lottery receipt sequence"
+		reward.coins=int(reward.coins)
+		reward.sequence=int(reward.sequence)
+		expected+=1
+	if data.lottery_history.size()!=mini(50,data.next_roll_sequence-1):
+		return "Missing lottery history"
+	return ""
+
+static func _valid_reward(reward: Variant) -> bool:
+	if not reward is Dictionary:
+		return false
+	return reward.get("category") in ["coins","regular_cosmetics","regular_decorations","exclusive"] and reward.get("item_id") is String and valid_integer(reward.get("coins")) and reward.get("duplicate_fallback") is bool and reward.get("fallback") in ["","exhausted_pool","duplicate_regular"]
+
+var tickets: int:
+	get: return int(_data.lottery_tickets)
+
+func resolve_level50_rewards() -> bool:
+	# Automatic permanent grants are allowed during a shift; no editing or spending.
+	if _cafe_transaction or not writable:
+		return false
+	if pending_tickets==0:
+		return true
+	var candidate := snapshot()
+	var rng_before := reward_rng.state
+	var processed := 0
+	if candidate.pending_welcome_ticket:
+		candidate.pending_welcome_ticket=false
+		candidate.welcome_processed=true
+		candidate.lottery_tickets+=1
+	while candidate.pending_cycle_tickets>0 and processed<128:
+		var reward := GoldenPawRewards.outcome(candidate,reward_catalog,cafe_catalog.decorations,reward_rng,true)
+		if not GoldenPawRewards.apply(candidate,reward,reward_catalog):
+			reward_rng.state=rng_before
+			last_error="Coin balance limit; reward entitlements retained"
+			return false
+		candidate.resolved_cycles+=1
+		candidate.pending_cycle_tickets-=1
+		candidate.lottery_tickets+=1
+		reward.cycle_id=candidate.resolved_cycles
+		candidate.cycle_rewards.append(reward)
+		processed+=1
+	_cafe_transaction=true
+	var success := _commit(candidate)
+	_cafe_transaction=false
+	if not success:
+		reward_rng.state=rng_before
+	return success
+
+func roll_lottery(count: int, expected_sequence: int) -> bool:
+	last_roll_results=[]
+	if _cafe_transaction or not can_manage_cafe() or level<50 or count not in [1,10] or tickets<count or expected_sequence!=int(_data.next_roll_sequence):
+		last_error="Lottery locked, insufficient tickets, stale roll request, or shift active"
+		return false
+	if int(_data.next_roll_sequence)>MAX_INTEGER-count:
+		last_error="Roll sequence limit reached"
+		return false
+	var candidate := snapshot()
+	var outcomes: Array=[]
+	var rng_before := reward_rng.state
+	for i in range(count):
+		var reward := GoldenPawRewards.outcome(candidate,reward_catalog,cafe_catalog.decorations,reward_rng)
+		if not GoldenPawRewards.apply(candidate,reward,reward_catalog):
+			reward_rng.state=rng_before
+			last_error="Coin balance limit; tickets unchanged"
+			return false
+		reward.sequence=candidate.next_roll_sequence
+		candidate.next_roll_sequence+=1
+		candidate.lottery_tickets-=1
+		candidate.lottery_history.append(reward)
+		outcomes.append(reward)
+	while candidate.lottery_history.size()>50:
+		candidate.lottery_history.pop_front()
+	_cafe_transaction=true
+	var success := _commit(candidate)
+	_cafe_transaction=false
+	if success:
+		last_roll_results=outcomes.duplicate(true)
+	else:
+		reward_rng.state=rng_before
+	return success
+
+func owns_cosmetic(id: String) -> bool:
+	return id in _data.owned_cosmetics
+
+func grant_cosmetic(id: String) -> bool:
+	if _cafe_transaction or reward_catalog.cosmetic(id).is_empty():
+		last_error="Invalid cosmetic grant"
+		return false
+	if owns_cosmetic(id):
+		return true
+	var candidate := snapshot()
+	candidate.owned_cosmetics.append(id)
+	_cafe_transaction=true
+	var success := _commit(candidate)
+	_cafe_transaction=false
+	return success
+
+func equip_cosmetic(id: String) -> bool:
+	if _cafe_transaction or not can_manage_cafe() or (not id.is_empty() and not owns_cosmetic(id)):
+		last_error="Cosmetic must be owned; equipment changes require an inactive shift"
+		return false
+	var candidate := snapshot()
+	candidate.equipped_cosmetics.cafe_badge=id
+	return _commit(candidate)
+
+func collections() -> Dictionary:
+	return reward_catalog.collection_summary(_data,cafe_catalog.decorations)
