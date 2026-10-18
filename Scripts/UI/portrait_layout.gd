@@ -62,7 +62,15 @@ func _update_layout() -> void:
 		settings.custom_minimum_size = Vector2(ceili(88.0 / ui_scale), ceili(48.0 / ui_scale))
 		settings.add_theme_font_size_override("font_size", readable_font(28))
 		for label in hud.get_node("StatsRow").get_children():
-			label.add_theme_font_size_override("font_size", readable_font(28))
+			label.add_theme_font_size_override("font_size", readable_font(26))
+			var panel := StyleBoxFlat.new()
+			panel.bg_color = Color("fff6e7")
+			panel.border_color = Color("b88b6c")
+			panel.set_border_width_all(1)
+			panel.set_corner_radius_all(14)
+			panel.content_margin_top = 5.0 / ui_scale
+			panel.content_margin_bottom = 5.0 / ui_scale
+			label.add_theme_stylebox_override("normal", panel)
 		layout.get_node("Welcome").visible = not compact
 		layout.get_node("FoundationNote").hide()
 		layout.get_node("BottomNavigation").configure(ui_scale, content_width * ui_scale)

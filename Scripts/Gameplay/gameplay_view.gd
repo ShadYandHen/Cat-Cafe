@@ -5,6 +5,7 @@ var screen: Control
 var previous_focus: Control
 var _shown_view: int = -1
 var _layout_signature: Array = []
+const EQUIPMENT := ["CoffeeEquipment", "MilkEquipment", "TeaEquipment", "ColdEquipment"]
 
 func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 	screen = cafe_screen
@@ -34,8 +35,9 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 	$DayLobby/Content/Layout/Action.pressed.connect(session.start_next_day)
 	$Customer.pressed.connect(_open_seat.bind(0))
 	$CustomerRight.pressed.connect(_open_seat.bind(1))
-	$CoffeeEquipment.text = "Prepare"
-	$CoffeeEquipment.pressed.connect(session.open_station)
+	$CustomerRight/Bunny.bear = true
+	for i in range(4):
+		get_node(EQUIPMENT[i]).pressed.connect(_open_equipment.bind(DrinkCatalog.CATEGORIES[i]))
 	screen.get_node("Content/Layout/BottomNavigation/Prepare").pressed.connect(session.open_station)
 	screen.get_node("Content/Layout/BottomNavigation/Prepare").tooltip_text = "Prepare a drink"
 	var body := $CoffeeStation/Content/Layout/Workspace/Body
@@ -54,6 +56,14 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 	session.changed.connect(_refresh)
 	session.clock_changed.connect(_clock_changed)
 	_refresh()
+
+func _open_equipment(category: String) -> void:
+	# Session owns availability and selection; equipment adds no gameplay state.
+	if session.view != CafeSession.View.CAFE or get_node(EQUIPMENT[DrinkCatalog.CATEGORIES.find(category)]).disabled:
+		return
+	session.open_station()
+	if session.view == CafeSession.View.STATION:
+		session.select_station(category)
 
 func _open_seat(seat: int) -> void:
 	session.open_order(session.order_at_seat(seat))
@@ -99,6 +109,7 @@ func _station_action() -> void:
 		session.start_brewing()
 
 func _refresh() -> void:
+	_layout_signature.clear() # Reflow newly occupied seats after their recipe text settles.
 	var order_panel := $OrderScreen/Content/Layout
 	var station := $CoffeeStation/Content/Layout
 	var selected := session.get_order(session.selected_order_id)
@@ -201,7 +212,9 @@ func _refresh() -> void:
 		if actor.visible:
 			var order := session.get_order(session.order_at_seat(i))
 			actor.theme_type_variation = [&"PeachButton", &"GoldButton", &"MintButton"][order.state]
-	$CoffeeEquipment.visible = session.view == CafeSession.View.CAFE
+	for equipment in EQUIPMENT:
+		get_node(equipment).visible = session.view == CafeSession.View.CAFE
+	screen.get_node("Content/Layout/Cafe").set_barista(session.team.active_cat())
 	$Status.visible = session.view == CafeSession.View.CAFE
 	if _shown_view != session.view:
 		if session.view != CafeSession.View.CAFE:
@@ -228,13 +241,20 @@ func _refresh() -> void:
 
 func _clock_changed() -> void:
 	var hud := screen.get_node("Content/Layout/TopHUD/StatsRow")
-	hud.get_node("Coins").text = "Coins\n%d" % session.coins
-	hud.get_node("Day").text = "Day\n%d" % session.day
-	hud.get_node("Level").text = "Level\n%d" % session.profile.level
+	hud.get_node("Coins").text = "Coins %d" % session.coins
+	hud.get_node("Day").text = "Day %d" % session.day
+	hud.get_node("Level").text = "Level %d" % session.profile.level
 	screen.get_node("Content/Layout/Welcome").text = session.profile.progress_text()
-	$Status.add_theme_stylebox_override("normal", screen.theme.get_stylebox("normal", "GoldButton" if session.phase == CafeSession.Phase.RUSH else "CreamLabel"))
+	var status_style := StyleBoxFlat.new()
+	status_style.bg_color = Color("f5d5a1") if session.phase == CafeSession.Phase.RUSH else Color("fff6e7")
+	status_style.set_corner_radius_all(16)
+	status_style.content_margin_top = 3.0 / screen.ui_scale
+	status_style.content_margin_bottom = 3.0 / screen.ui_scale
+	$Status.add_theme_stylebox_override("normal", status_style)
 	var shift := "%s · %s" % [session.countdown(), session.phase_label()]
-	$Status.text = "%s · %d/2 guests\n%s\n%s" % [shift, session.active_count(), session.ability_status(), session.feedback]
+	$Status.text = shift + " · " + session.ability_status().replace(" cooldown", "")
+	$Status.tooltip_text = session.feedback
+	screen.get_node("Content/Layout/TopHUD/TitleRow/CafeName").tooltip_text = session.feedback
 	var selected := session.get_order(session.selected_order_id)
 	var detail := "No selected order"
 	if selected != null:
@@ -244,9 +264,26 @@ func _clock_changed() -> void:
 	for i in range(2):
 		var order := session.get_order(session.order_at_seat(i))
 		if order != null:
-			var state_label: String = ["Order", "Pending", "Ready"][order.state]
-			_actor(i).text = "Guest #%d: %s" % [order.customer_id, state_label]
-			_actor(i).get_node("Caption").text = "#%d\n%s\n%ds" % [order.order_id, state_label, ceili(order.remaining(session.elapsed))]
+			var actor := _actor(i)
+			var fraction: float = order.remaining(session.elapsed) / order.original_patience
+			var low := fraction < 0.3
+			var state_label: String = ["Take order", "Preparing", "Serve drink"][order.state]
+			actor.text = "Guest #%d: %s; %s; %ds patience" % [order.customer_id, order.requested_drink, state_label, ceili(order.remaining(session.elapsed))]
+			actor.tooltip_text = actor.text + " · Temporary woodland customer"
+			actor.get_node("Caption").text = order.requested_drink
+			actor.get_node("State").text = ("! " if low else "") + state_label
+			actor.get_node("Patience").value = fraction
+			var fill := StyleBoxFlat.new()
+			fill.bg_color = Color("b45962") if low else Color("b9904f") if fraction < 0.6 else Color("668b70")
+			fill.set_corner_radius_all(6)
+			actor.get_node("Patience").add_theme_stylebox_override("fill",fill)
+			var bubble := StyleBoxFlat.new()
+			bubble.bg_color = Color("fff6e7")
+			bubble.set_corner_radius_all(14)
+			bubble.border_color = Color("b45962") if low else Color("6c997b") if order.state == CafeSession.State.DRINK_READY else Color("805b46")
+			bubble.set_border_width_all(3 if order.order_id == session.selected_order_id else 1)
+			actor.get_node("Caption").add_theme_stylebox_override("normal",bubble)
+			actor.get_node("State").modulate = Color("a83f4e") if low else Color("805b46")
 	for button in $CoffeeStation/Content/Layout/OrderChoices.get_children():
 		var order := session.get_order(button.get_meta("order_id", -1))
 		if order != null:
@@ -303,27 +340,52 @@ func _layout() -> void:
 		return
 	_layout_signature = signature
 	var font_size := ceili(maxf(28, 16.0 / scale_factor))
+	var factor: float = stage.scale.x
 	for i in range(2):
 		var actor := _actor(i)
-		actor.custom_minimum_size = Vector2(maxf(120, 60.0 / scale_factor), maxf(200, 96.0 / scale_factor))
-		actor.size = actor.custom_minimum_size
-		var face := actor.get_node("Bunny") as Control
-		var face_size := maxf(44.0, 22.0 / scale_factor)
-		face.position = Vector2((actor.size.x - face_size) / 2, 4.0 / scale_factor)
-		face.size = Vector2.ONE * face_size
-		var caption := actor.get_node("Caption") as Label
-		caption.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
-		caption.position = Vector2(4.0 / scale_factor, face.position.y + face_size)
-		caption.size = Vector2(actor.size.x - 8.0 / scale_factor, actor.size.y - caption.position.y - 4.0 / scale_factor)
+		actor.custom_minimum_size = Vector2.ZERO
+		actor.size = Vector2(280 * factor, maxf(230 * factor, 112.0 / scale_factor))
 		var marker := "CustomerSeatLeft" if i == 0 else "CustomerSeatRight"
 		actor.position = stage.get_node(marker).global_position - global_position - Vector2(actor.size.x / 2, actor.size.y)
-	$CoffeeEquipment.custom_minimum_size = Vector2(maxf(160, 80.0 / scale_factor), maxf(96, 48.0 / scale_factor))
-	$CoffeeEquipment.size = $CoffeeEquipment.custom_minimum_size
-	$CoffeeEquipment.add_theme_font_size_override("font_size", ceili(maxf(28, 14.0 / scale_factor)))
-	$CoffeeEquipment.position = stage.to_global(Vector2(132, 352)) - global_position - $CoffeeEquipment.size / 2
+		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+			var style := StyleBoxFlat.new()
+			style.bg_color = Color(1, 0.95, 0.9, 0.1 if state == "normal" else 0.3)
+			style.set_corner_radius_all(16)
+			if state == "focus":
+				style.border_color = Color("b45962")
+				style.set_border_width_all(3)
+			actor.add_theme_stylebox_override(state, style)
+		var caption := actor.get_node("Caption") as Label
+		caption.add_theme_font_size_override("font_size", ceili(maxf(26, 14.0 / scale_factor)))
+		caption.position = Vector2.ZERO
+		caption.size = Vector2(actor.size.x, maxf(76, 40.0 / scale_factor))
+		var face := actor.get_node("Bunny") as Control
+		var state_height := maxf(36, 20.0 / scale_factor)
+		var bar_height := maxf(8, 6.0 / scale_factor)
+		var face_top := caption.size.y + 2.0 / scale_factor
+		var face_size := minf(actor.size.x * 0.6, actor.size.y - face_top - state_height - bar_height - 6.0 / scale_factor)
+		face.position = Vector2((actor.size.x - face_size) / 2, face_top)
+		face.size = Vector2.ONE * face_size
+		var patience := actor.get_node("Patience") as ProgressBar
+		patience.position = Vector2(6.0 / scale_factor, actor.size.y - state_height - bar_height - 2.0 / scale_factor)
+		patience.size = Vector2(actor.size.x - 12.0 / scale_factor, bar_height)
+		var background := StyleBoxFlat.new()
+		background.bg_color = Color("e4d6c3")
+		background.set_corner_radius_all(6)
+		patience.add_theme_stylebox_override("background", background)
+		var state := actor.get_node("State") as Label
+		state.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
+		state.position = Vector2(0, actor.size.y - state_height)
+		state.size = Vector2(actor.size.x, state_height)
+	for i in range(4):
+		var equipment := get_node(EQUIPMENT[i]) as Button
+		equipment.custom_minimum_size = Vector2.ZERO
+		equipment.size = Vector2(148 * factor, maxf(106 * factor, 48.0 / scale_factor))
+		equipment.position = stage.to_global(Vector2(26 + 160 * i, 340)) - global_position
+		equipment.configure(scale_factor)
 	$Status.position = cafe.global_position - global_position + Vector2(8, 0) / scale_factor
 	$Status.size = Vector2(cafe.size.x - 16.0 / scale_factor, 0)
-	$Status.add_theme_font_size_override("font_size", ceili(maxf(28, 16.0 / scale_factor)))
+	$Status.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
 	for panel in [$OrderScreen, $CoffeeStation, $DayResults, $DayLobby]:
 		var column := panel.get_node("Content") as MarginContainer
 		column.position = content.position

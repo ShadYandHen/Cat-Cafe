@@ -307,7 +307,7 @@ func profile_ui() -> void:
 		s.open_order(1)
 		s.serve()
 		await settle()
-		check(p.level==2 and p.xp==14 and main.get_node("Content/Layout/TopHUD/StatsRow/Level").text=="Level\n2","Service levels up and updates HUD")
+		check(p.level==2 and p.xp==14 and main.get_node("Content/Layout/TopHUD/StatsRow/Level").text=="Level 2","Service levels up and updates HUD")
 		s._arrive()
 		s._arrive()
 		await settle()

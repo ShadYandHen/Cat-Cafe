@@ -304,7 +304,7 @@ func upgraded_preparation() -> void:
 	var coins := p.coins
 	await click(view.get_node("Customer"))
 	await click(view.get_node("OrderScreen/Content/Layout/Action"))
-	await click(view.get_node("CoffeeEquipment"))
+	await click(view.get_node(view.EQUIPMENT[DrinkCatalog.CATEGORIES.find(order.recipe.category)]))
 	var station := view.get_node("CoffeeStation/Content/Layout")
 	var body := station.get_node("Workspace/Body")
 	var scroll := station.get_node("Workspace") as ScrollContainer

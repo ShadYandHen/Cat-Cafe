@@ -176,7 +176,7 @@ func complete_shift_ui() -> void:
 	await click(view.get_node("DayResults/Content/Layout/Action"))
 	s.start_next_day()
 	check(s.day == 2 and s.coins == balance and s.served == 0 and s.earned == 0, "Next day preserves coins and resets counters once")
-	check(main.get_node("Content/Layout/TopHUD/StatsRow/Day").text == "Day\n2", "Runtime day HUD updates")
+	check(main.get_node("Content/Layout/TopHUD/StatsRow/Day").text == "Day 2", "Runtime day HUD updates")
 	layout_checks(main)
 	main.queue_free()
 	await process_frame

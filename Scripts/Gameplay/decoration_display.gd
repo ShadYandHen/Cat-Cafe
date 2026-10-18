@@ -1,7 +1,7 @@
 class_name DecorationDisplay
 extends Node2D
-## Additive non-interactive markers in the existing 680x740 café coordinates.
-const POSITIONS := {"wall_display":Vector2(335,370),"shelf_display":Vector2(355,610),"floor_display":Vector2(360,684)}
+## Additive non-interactive markers in the existing 680x760 café coordinates.
+const POSITIONS := {"wall_display":Vector2(340,105),"shelf_display":Vector2(600,295),"floor_display":Vector2(340,592)}
 const MARKER_SIZE := Vector2(48,48)
 var profile: CafeProfile
 
@@ -11,7 +11,8 @@ func setup(model: CafeProfile) -> void:
 	queue_redraw()
 
 func marker_rect(slot: String) -> Rect2:
-	return Rect2(POSITIONS[slot]-MARKER_SIZE/2,MARKER_SIZE)
+	var dimensions := MARKER_SIZE * Vector2(0.5 if slot=="floor_display" else 1.0,1.0)
+	return Rect2(POSITIONS[slot]-dimensions/2,dimensions)
 
 func _draw() -> void:
 	if profile==null:
@@ -19,7 +20,7 @@ func _draw() -> void:
 	# A café badge indicator, never painted onto the official character illustrations.
 	var badge: String=profile.snapshot().equipped_cosmetics.cafe_badge
 	if not badge.is_empty():
-		var center := Vector2(475,370)
+		var center := Vector2(80,295)
 		draw_circle(center,20,Color("805b46"))
 		draw_circle(center,17,Color(CafeProfile.reward_catalog.cosmetic(badge).color))
 		draw_circle(center+Vector2(0,5),7,Color("fff6e7"))
@@ -31,13 +32,15 @@ func _draw() -> void:
 			continue
 		var entry := CafeProfile.cafe_catalog.decoration(id)
 		var center: Vector2=POSITIONS[slot]
+		var horizontal := 0.5 if slot=="floor_display" else 1.0
+		draw_set_transform(Vector2(center.x*(1.0-horizontal),0),0,Vector2(horizontal,1))
 		var ink := Color("805b46")
 		var style := StyleBoxFlat.new()
 		style.bg_color=Color(entry.color)
 		style.border_color=ink
 		style.set_border_width_all(2)
 		style.set_corner_radius_all(10)
-		draw_style_box(style,marker_rect(slot))
+		draw_style_box(style,Rect2(center-MARKER_SIZE/2,MARKER_SIZE))
 		match entry.symbol:
 			"paw":
 				draw_circle(center+Vector2(0,5),9,ink)

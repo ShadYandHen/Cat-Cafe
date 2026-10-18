@@ -15,13 +15,25 @@ script = ExtResource("1")
 [node name="Stage" type="Node2D" parent="."]
 
 [node name="PrepStation" type="Marker2D" parent="Stage"]
-position = Vector2(185, 405)
+position = Vector2(100, 439)
 
 [node name="CustomerSeatLeft" type="Marker2D" parent="Stage"]
-position = Vector2(438, 472)
+position = Vector2(183, 752)
 
 [node name="CustomerSeatRight" type="Marker2D" parent="Stage"]
-position = Vector2(600, 472)
+position = Vector2(497, 752)
 
 [node name="CatRest" type="Marker2D" parent="Stage"]
-position = Vector2(182, 660)
+position = Vector2(340, 550)
+
+[node name="Barista" type="TextureRect" parent="Stage"]
+offset_left = 194.0
+offset_top = 84.0
+offset_right = 486.0
+offset_bottom = 480.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Counter" type="Control" parent="Stage"]
+mouse_filter = 2
