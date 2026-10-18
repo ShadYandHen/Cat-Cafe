@@ -12,6 +12,14 @@ func _ready() -> void:
 func readable_font(base: int, minimum_pixels: float = 16.0) -> int:
 	return maxi(base, ceili(minimum_pixels / ui_scale))
 
+static func native_safe_insets(window_rect: Rect2, safe_rect: Rect2) -> Vector4:
+	# Both rectangles use screen pixels. Intersection avoids applying insets twice
+	# when Android already limits the app window to the usable screen area.
+	var usable := window_rect.intersection(safe_rect)
+	if not usable.has_area():
+		return Vector4.ZERO # Unavailable/invalid platform information.
+	return Vector4(maxf(0, usable.position.x-window_rect.position.x), maxf(0, usable.position.y-window_rect.position.y), maxf(0, window_rect.end.x-usable.end.x), maxf(0, window_rect.end.y-usable.end.y))
+
 func _update_layout() -> void:
 	var window_pixels := Vector2(get_window().size)
 	safe_insets = Vector4.ZERO
@@ -29,6 +37,9 @@ func _update_layout() -> void:
 			if values is Array and values.size() == 6:
 				window_pixels = Vector2(values[0], values[1])
 				safe_insets = Vector4(values[2], values[3], values[4], values[5])
+	elif OS.has_feature("android"):
+		var app_rect := Rect2(Vector2(DisplayServer.window_get_position()), window_pixels)
+		safe_insets = native_safe_insets(app_rect, Rect2(DisplayServer.get_display_safe_area()))
 	ui_scale = maxf(0.01, minf(window_pixels.x / size.x, window_pixels.y / size.y))
 	var usable_width := size.x - (safe_insets.x + safe_insets.z) / ui_scale
 	var content_width := minf(usable_width, 720.0)

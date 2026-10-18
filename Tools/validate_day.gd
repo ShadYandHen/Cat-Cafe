@@ -84,9 +84,9 @@ func phase_and_schedule() -> void:
 	s.free()
 	# Default interval ranges and seeded repeatability.
 	var a := make_session(60, true)
-	check(a.next_arrival >= 25 and a.next_arrival <= 35, "Default normal schedule range")
+	check(a.next_arrival >= 20 and a.next_arrival <= 26, "Default normal schedule range")
 	a.advance_time(120)
-	check(a.next_arrival - a.elapsed >= 10 and a.next_arrival - a.elapsed <= 15, "Default rush schedule range")
+	check(a.next_arrival - a.elapsed >= 9 and a.next_arrival - a.elapsed <= 12, "Default rush schedule range")
 	a.free()
 
 func independent_orders() -> void:

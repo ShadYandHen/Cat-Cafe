@@ -157,7 +157,7 @@ func cancellation_and_expiry() -> void:
 	s.select_station_order(1)
 	s.toggle_ingredient("Milk")
 	s.start_brewing()
-	s.advance_time(25)
+	s.advance_time(40)
 	s.stop_preparation()
 	s.finish_coffee()
 	check(s.get_order(1).state == CafeSession.State.DEPARTED and s.brew_order_id == -1 and s.coins == 120 and s.reputation_earned == 0, "Expiration while processing invalidates draft/rewards")
@@ -177,7 +177,7 @@ func cancellation_and_expiry() -> void:
 	draft.accept_order()
 	draft.open_station()
 	draft.toggle_ingredient("Milk")
-	draft.advance_time(60)
+	draft.advance_time(75)
 	check(draft.selected_ingredients.is_empty() and draft.brew_order_id == -1, "Expiry before processing clears selected ingredient draft")
 	draft.free()
 

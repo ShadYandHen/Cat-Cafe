@@ -4,7 +4,7 @@ Step 8 adds [persistent progression, saves, and pre-day team setup](PlayerProfil
 
 Step 6 extends preparation and rewards; see [Drink preparation](DrinkPreparation.md) for current recipes, controls and scoring.
 
-Run `project.godot` in Godot 4.6.3 and press F5 → Play. Day 1 starts at 120 Coins with a guest immediately seated. Further guests arrive on a seeded schedule: 25–35 seconds normally, 10–15 during Rush. A full café skips an arrival; nothing queues or stacks. There are two existing seat markers and no new furniture or moving characters.
+Run `project.godot` in Godot 4.6.3 and press F5 → Play → Start Day. Day 1 starts at 120 Coins with a guest immediately seated. Further guests arrive on a seeded schedule: 20–26 seconds normally, 9–12 during Rush. A full café skips an arrival; nothing queues or stacks. There are two existing seat markers and no new furniture or moving characters.
 
 ## Play a shift
 
@@ -12,7 +12,7 @@ Run `project.godot` in Godot 4.6.3 and press F5 → Play. Day 1 starts at 120 Co
 - Tap **Prepare**. When multiple accepted/ready orders exist, the station shows numbered order-selection buttons. Select the intended order, select ingredients, manually stop the recipe process at its target, then Assemble drink.
 - Return and tap the matching guest to Serve drink for its recipe base value plus quality tip and daily XP. Other customers cannot receive that drink. You can have a ready drink for each order; there is no general inventory system.
 - Back/Escape or switching selected orders discards unfinished brewing, including a stopped process that has not been assembled. Already-finished drinks remain bound to their customers until served or expired.
-- Each guest has 60 seconds from arrival, including time before acceptance. Time continues in order, station and Settings interfaces. Expiry releases only that guest's seat and invalidates their order/drink. If a selected guest leaves, choose another available order or return to the café.
+- Each guest has 75 base seconds from arrival, including time before acceptance. Time continues in order, station and Settings interfaces. Expiry releases only that guest's seat and invalidates their order/drink. If a selected guest leaves, choose another available order or return to the café.
 
 ## Five-minute day
 
@@ -49,3 +49,5 @@ godot --headless --path . --script res://Tools/validate_foundation.gd
 `validate_day.gd` accelerates the same production clock to exercise a full shift, independent orders, selection cancellation, expiry, soft-close service, exact rewards, result counters, next-day reset, stale actions, and coarse/fine timestep equivalence. `validate_gameplay.gd` uses mouse events at 720×1280 and simulated touch at 320×568 for two orders, selection, service, results and next day. It also tests live runtime clock advancement inside station/Settings, keyboard control, focus, and interface bounds/overlap. Foundation checks cover the existing eight viewport sizes.
 
 Balance values are prototype exports on `CafeSession`; the default seed is 417 (offset by day). Native Godot screenshots were inspected. Browser/device, high-DPI safe areas, and long real-time playtesting remain unverified. Step 6 adds recipes, quality scoring and daily XP; cat abilities/movement, permanent reputation levels, upgrades, cosmetics and persistence remain unimplemented.
+
+Current pacing and modifier details: [Step 14](BalancedCafePacing.md).

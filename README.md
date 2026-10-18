@@ -107,3 +107,5 @@ Step 10B: [Seasonal Pass, UTC challenges and permanent Reward Inbox](Docs/Season
 Step 11: [Full gameplay integration findings and isolated development tools](Docs/GameplayIntegration.md).
 
 Step 13A: [approved Seasonal XP, ingredient quality caps, and fractional-tip accounting](Docs/BalanceCorrections13A.md).
+
+Step 14: [Balanced café playtesting baseline](Docs/BalancedCafePacing.md): 20–26s normal arrivals, 9–12s Rush arrivals, and 75s base patience.

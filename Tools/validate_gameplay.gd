@@ -193,7 +193,7 @@ func expiry_and_live_clock() -> void:
 	s.open_station()
 	s.select_station_order(1)
 	s.start_brewing()
-	s.advance_time(30)
+	s.advance_time(45)
 	await settle()
 	check(s.get_order(1).state == CafeSession.State.DEPARTED and s.get_order(2).state == CafeSession.State.ORDER_ACCEPTED, "Selected guest expires independently")
 	check(view.get_node("CoffeeStation/Content/Layout/OrderChoices").visible, "Remaining order selectable after expiry")

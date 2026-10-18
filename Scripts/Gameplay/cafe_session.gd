@@ -21,12 +21,12 @@ var starting_level: int = 1
 var completion_pending: bool = false
 var _serving: bool = false
 @export var recipe_override: String = "" # Optional deterministic fixture; empty uses seeded variety.
-@export_range(0.1, 600.0) var patience_seconds: float = 60.0
+@export_range(0.1, 600.0) var patience_seconds: float = 75.0
 @export var day_seconds: float = 300.0
 @export var rush_start: float = 120.0
 @export var rush_end: float = 180.0
-@export var normal_arrival_interval := Vector2(25, 35)
-@export var rush_arrival_interval := Vector2(10, 15)
+@export var normal_arrival_interval := Vector2(20, 26)
+@export var rush_arrival_interval := Vector2(9, 12)
 @export var schedule_seed: int = 417
 
 var catalog := DrinkCatalog.new()

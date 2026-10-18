@@ -56,7 +56,7 @@ Only a qualifying event consumes an activation. A shared absolute `ability_ready
 | Max | Starting a valid accepted-order preparation | +15% speed for that draft |
 | Blaze | All required ingredients present and completed quality, after passives, is Excellent (75–94) | Convert to 95 before determining rewards |
 
-Mochi uses explicit threshold events in the existing chronological clock loop. Strictly below 30% is checked with a small floating-point tolerance. A crossing is consumed once even if cooldown is unavailable; it is not queued for later and restoration does not create another activation on that customer's next crossing. Simultaneous crossings use order creation order as a stable tie-break. Expired customers are resolved first and never revived. With Mochi equipped, the default original patience is 63s and restoration is 6.3s.
+Mochi uses explicit threshold events in the existing chronological clock loop. Strictly below 30% is checked with a small floating-point tolerance. A crossing is consumed once even if cooldown is unavailable; it is not queued for later and restoration does not create another activation on that customer's next crossing. Simultaneous crossings use order creation order as a stable tie-break. Expired customers are resolved first and never revived. With Mochi equipped, the Step 14 default original patience is 78.75s and restoration is 7.875s (75 base seconds before the existing +5% passive).
 
 Preparation effects are fixed when the player starts processing:
 
