@@ -269,12 +269,12 @@ func click(control: Button, touch: bool, scroll: ScrollContainer = null) -> void
 	await settle()
 
 func ui() -> void:
-	root.content_scale_size=Vector2i(720,1280)
+	root.content_scale_size=Vector2i(1280,720)
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect=Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720,1280),Vector2i(320,568)]:
+	for dimensions in [Vector2i(1280,720),Vector2i(960,540)]:
 		root.size=dimensions
-		var touch: bool = dimensions.x==320
+		var touch: bool = dimensions.x==960
 		var p := fixture(-1)
 		var main := MAIN.instantiate() as Control
 		var session := main.get_node("CafeSession") as CafeSession

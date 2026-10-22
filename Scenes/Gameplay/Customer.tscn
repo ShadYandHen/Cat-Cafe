@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 [ext_resource type="Script" path="res://Scripts/Gameplay/customer_placeholder.gd" id="1"]
 [ext_resource type="Texture2D" path="res://Assets/UI/Icons/prepare.svg" id="2"]
+[ext_resource type="Script" path="res://Scripts/UI/drink_canvas.gd" id="cup"]
 [node name="Customer" type="Button"]
 theme_type_variation = &"PeachButton"
 text = "Guest"
@@ -52,3 +53,12 @@ step = 0.001
 mouse_filter = 2
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CompletedDrink" type="Control" parent="Ticket/DrinkIcon"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+visible = false
+script = ExtResource("cup")

@@ -1,4 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://Scripts/UI/preparation_layout.gd" id="layout"]
+[ext_resource type="Script" path="res://Scripts/UI/drink_canvas.gd" id="cup"]
+[ext_resource type="Script" path="res://Scripts/UI/ingredient_button.gd" id="ingredient"]
 [sub_resource type="StyleBoxFlat" id="track"]
 bg_color = Color(0.91, 0.83, 0.73, 1)
 border_width_left = 2
@@ -38,9 +41,9 @@ theme_override_constants/margin_right = 32
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_bottom = 32
 
-[node name="Layout" type="VBoxContainer" parent="Content"]
+[node name="Layout" type="Control" parent="Content"]
 layout_mode = 2
-theme_override_constants/separation = 24
+script = ExtResource("layout")
 
 [node name="Heading" type="Label" parent="Content/Layout"]
 layout_mode = 2
@@ -52,7 +55,7 @@ layout_mode = 2
 text = "Patience: 60s"
 horizontal_alignment = 1
 
-[node name="OrderChoices" type="HBoxContainer" parent="Content/Layout"]
+[node name="OrderChoices" type="VBoxContainer" parent="Content/Layout"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
@@ -77,31 +80,31 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="Stations" type="GridContainer" parent="Content/Layout/Workspace/Body"]
+[node name="Stations" type="Control" parent="Content/Layout"]
 layout_mode = 2
 columns = 2
 
-[node name="Station0" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+[node name="Station0" type="Button" parent="Content/Layout/Stations"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Coffee"
 
-[node name="Station1" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+[node name="Station1" type="Button" parent="Content/Layout/Stations"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Milk"
 
-[node name="Station2" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+[node name="Station2" type="Button" parent="Content/Layout/Stations"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Tea"
 
-[node name="Station3" type="Button" parent="Content/Layout/Workspace/Body/Stations"]
+[node name="Station3" type="Button" parent="Content/Layout/Stations"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cold Drinks"
 
-[node name="Description" type="Label" parent="Content/Layout/Workspace/Body"]
+[node name="Description" type="Label" parent="Content/Layout"]
 layout_mode = 2
 text = "Basic Coffee"
 autowrap_mode = 2
@@ -112,46 +115,55 @@ layout_mode = 2
 columns = 3
 
 [node name="Ingredient0" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Coffee"
 
 [node name="Ingredient1" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Water"
 
 [node name="Ingredient2" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Milk"
 
 [node name="Ingredient3" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Vanilla"
 
 [node name="Ingredient4" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Honey"
 
 [node name="Ingredient5" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Tea"
 
 [node name="Ingredient6" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Berries"
 
 [node name="Ingredient7" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Ice"
 
 [node name="Ingredient8" type="Button" parent="Content/Layout/Workspace/Body/Ingredients"]
+script = ExtResource("ingredient")
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cocoa"
@@ -176,3 +188,7 @@ text = "Settings"
 [node name="Back" type="Button" parent="Content/Layout"]
 layout_mode = 2
 text = "Back to café"
+
+[node name="DrinkWorkspace" type="Control" parent="Content/Layout"]
+mouse_filter = 2
+script = ExtResource("cup")

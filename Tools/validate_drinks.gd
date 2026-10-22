@@ -186,11 +186,11 @@ func settle() -> void:
 		await process_frame
 
 func input_button(button: Button, touch: bool, scroll: ScrollContainer = null) -> void:
-	if scroll != null:
+	if scroll != null and scroll.is_ancestor_of(button):
 		scroll.ensure_control_visible(button)
 		await settle()
 	check(button.is_visible_in_tree() and not button.disabled, "Enabled input " + button.name)
-	if scroll != null:
+	if scroll != null and scroll.is_ancestor_of(button):
 		check(scroll.get_global_rect().encloses(button.get_global_rect()), "Scrolled input fully accessible " + button.name)
 	var center := button.get_global_rect().get_center()
 	for pressed in [true, false]:
@@ -209,12 +209,12 @@ func input_button(button: Button, touch: bool, scroll: ScrollContainer = null) -
 	await settle()
 
 func station_inputs() -> void:
-	root.content_scale_size = Vector2i(720,1280)
+	root.content_scale_size = Vector2i(1280,720)
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720,1280), Vector2i(320,568)]:
+	for dimensions in [Vector2i(1280,720), Vector2i(960,540)]:
 		root.size = dimensions
-		var touch: bool = dimensions.x == 320
+		var touch: bool = dimensions.x == 960
 		for recipe in DrinkCatalog.new().recipes:
 			var main := MAIN.instantiate() as Control
 			main.get_node("CafeSession").profile = CafeProfile.new()
@@ -235,13 +235,13 @@ func station_inputs() -> void:
 			check(layout.get_node("Heading").text == recipe.category + " station", "Dedicated category interface " + recipe.id)
 			var factor := float(dimensions.x) / main.size.x
 			for group in ["Stations","Ingredients"]:
-				for button in body.get_node(group).get_children():
+				for button in (layout.get_node("Stations") if group=="Stations" else body.get_node(group)).get_children():
 					check(button.size.x * factor >= 44 and button.size.y * factor >= 44, "44px station target " + button.text)
 					check(button.get_theme_font_size("font_size") * factor >= 14, "Readable station label " + button.text)
 			for index in range(4):
-				await input_button(body.get_node("Stations").get_child(index), touch, scroll)
+				await input_button(layout.get_node("Stations").get_child(index), touch, scroll)
 				check(s.station_category == DrinkCatalog.CATEGORIES[index], "Station tab input " + DrinkCatalog.CATEGORIES[index])
-			await input_button(body.get_node("Stations").get_child(DrinkCatalog.CATEGORIES.find(recipe.category)), touch, scroll)
+			await input_button(layout.get_node("Stations").get_child(DrinkCatalog.CATEGORIES.find(recipe.category)), touch, scroll)
 			for ingredient in recipe.ingredients:
 				var i := DrinkCatalog.INGREDIENTS.find(ingredient)
 				await input_button(body.get_node("Ingredients").get_child(i), touch, scroll)

@@ -23,7 +23,7 @@ func _initialize() -> void:
 	check(config.get_value("preset.2.options","package/unique_name")=="org.shadyandhen.pawpadscafe.playtest", "Distinct playtest app ID")
 	for key in ["keystore/release","keystore/release_user","keystore/release_password"]:
 		check(config.get_value("preset.2.options",key,"")=="", "No production signing credential: "+key)
-	check(ProjectSettings.get_setting("display/window/handheld/orientation")==1, "Android portrait")
+	check(ProjectSettings.get_setting("display/window/handheld/orientation")==0, "Android landscape")
 	check(ProjectSettings.get_setting("rendering/textures/vram_compression/import_etc2_astc",false), "Mobile texture import enabled")
 	var window := Rect2(0,0,720,1280)
 	check(LAYOUT.native_safe_insets(window,window)==Vector4.ZERO, "No inset without cutout")

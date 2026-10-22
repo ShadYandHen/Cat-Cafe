@@ -1,7 +1,7 @@
 class_name DecorationDisplay
 extends Node2D
-## Additive non-interactive markers in the existing 680x760 café coordinates.
-const POSITIONS := {"wall_display":Vector2(340,105),"shelf_display":Vector2(600,295),"floor_display":Vector2(340,592)}
+## Additive non-interactive markers in the existing 1280x520 café coordinates.
+const POSITIONS := {"wall_display":Vector2(640,40),"shelf_display":Vector2(1160,165),"floor_display":Vector2(640,430)}
 const MARKER_SIZE := Vector2(48,48)
 var profile: CafeProfile
 
@@ -20,7 +20,7 @@ func _draw() -> void:
 	# A café badge indicator, never painted onto the official character illustrations.
 	var badge: String=profile.snapshot().equipped_cosmetics.cafe_badge
 	if not badge.is_empty():
-		var center := Vector2(80,295)
+		var center := Vector2(90,165)
 		draw_circle(center,20,Color("805b46"))
 		draw_circle(center,17,Color(CafeProfile.reward_catalog.cosmetic(badge).color))
 		draw_circle(center+Vector2(0,5),7,Color("fff6e7"))

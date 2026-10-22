@@ -1,10 +1,25 @@
 # Paw Pads Café
 
-A standalone Godot 4, GDScript, portrait-first 2D café foundation. Open `project.godot` in Godot 4.3 or newer and press **F5** to launch `Scenes/Title.tscn`. Choose **Play** to open the café; **F6** on `Scenes/Main.tscn` runs the café directly. Validated with Godot 4.6.3.
+A standalone Godot 4.6.3, GDScript, landscape-only 2D café game. Open `project.godot` in Godot 4.6.3 and press **F5** to launch `Scenes/Title.tscn`. Choose **Play** to open the café; **F6** on `Scenes/Main.tscn` runs the café directly. Validated with Godot 4.6.3.
 
 ## Play a café shift
 
-Play opens pre-day setup, where the team can be selected before starting a five-minute shift. Coins, Café Reputation Levels 1–50, completed days, and team selections save locally. See [persistent progression and saves](Docs/PlayerProfile.md). Upgrade and Decorate now open the [café shop](Docs/CafeShop.md): purchases, ownership and fixed display slots save permanently and are editable outside shifts. Customers recur at two seats during a shift. Accept a named drink, tap **Prepare**, select ingredients, stop the recipe’s timed process, assemble, then manually serve its matching guest. Eight recipes cover Coffee, Milk, Tea and Cold Drinks, with quality-based tips and daily Reputation XP. Rush runs from 2:00 to 3:00 elapsed; soft closing at 0:00 lets remaining orders finish. Results offer the next day and preserve session Coins. Cat Team is view-only during shifts and editable from results; three equipped cats contribute passives and only the active cat uses automatic abilities. See [cat team and abilities](Docs/CatTeam.md), [drink preparation](Docs/DrinkPreparation.md) and [café shifts](Docs/CafeDay.md).
+Play opens pre-day setup, where the team can be selected before starting a five-minute shift. Coins, Café Reputation Levels 1–50, completed days, and team selections save locally. See [persistent progression and saves](Docs/PlayerProfile.md). Upgrade and Decorate now open the [café shop](Docs/CafeShop.md): purchases, ownership and fixed display slots save permanently and are editable outside shifts. Customers recur at two seats during a shift. Tap the customer’s automatically visible order ticket, select ingredients, stop the recipe’s timed process, assemble, then tap that customer’s Ready → Serve ticket. Eight recipes cover Coffee, Milk, Tea and Cold Drinks, with quality-based tips and daily Reputation XP. Rush runs from 2:00 to 3:00 elapsed; soft closing at 0:00 lets remaining orders finish. Results offer the next day and preserve session Coins. Cat Team is view-only during shifts and editable from results; three equipped cats contribute passives and only the active cat uses automatic abilities. See [cat team and abilities](Docs/CatTeam.md), [drink preparation](Docs/DrinkPreparation.md) and [café shifts](Docs/CafeDay.md).
+
+## Current landscape presentation (Step 16L)
+
+The official reference viewport is **1280 × 720**, with Android locked to landscape.
+16:9 and wider displays use the full safe canvas; the desktop window starts at
+1152 × 648. The café is front-facing, with a stationary active barista, four equipment
+stations, two customer tickets and a compact HUD. The existing visual preparation
+system uses ingredients on the left, a large live cup in the center and actions on
+the right. There is no separate Prepare navigation button. Map opens Golden Paw,
+Collections, Seasonal Pass and the Inbox.
+
+See [Landscape conversion and validation](Docs/LandscapeConversion16L.md) for all
+screen layouts, safe-area rules, screenshots, current exports and limitations.
+Previous portrait validation and layout descriptions below record earlier milestones;
+they are superseded by Step 16L.
 
 ## Foundation
 

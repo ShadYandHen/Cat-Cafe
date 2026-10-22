@@ -1,6 +1,6 @@
 extends SceneTree
 ## Exercises real canvas stretch, UI bounds, text sizes, touch targets and interactions.
-const VIEWPORTS := [Vector2i(320, 568), Vector2i(360, 640), Vector2i(375, 667), Vector2i(390, 844), Vector2i(430, 932), Vector2i(720, 1280), Vector2i(1280, 720), Vector2i(1920, 1080)]
+const VIEWPORTS := [Vector2i(1280,720),Vector2i(1920,1080),Vector2i(2400,1080),Vector2i(2340,1080),Vector2i(960,540)]
 const NAV_NAMES := ["Upgrade", "Decorate", "Cat Team", "Map"]
 var failures: int = 0
 var capture_directory: String = ""
@@ -33,7 +33,7 @@ func validate() -> void:
 		if argument.begins_with("--capture-dir="):
 			capture_directory = argument.trim_prefix("--capture-dir=")
 			DirAccess.make_dir_recursive_absolute(capture_directory)
-	root.content_scale_size = Vector2i(720, 1280)
+	root.content_scale_size = Vector2i(1280, 720)
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
 	check(ProjectSettings.get_setting("application/run/main_scene") == "res://Scenes/Title.tscn", "Title configured at launch")
@@ -98,12 +98,12 @@ func validate() -> void:
 		print("PASS café: %s | HUD %.1fpx | nav %.1fpx | Settings %.1fpx" % [dimensions, hud.get_node("StatsRow/Coins").get_theme_font_size("font_size") * scale_factor, nav.get_node("Upgrade/Caption").get_theme_font_size("font_size") * scale_factor, settings.size.y * scale_factor])
 	check_theme(cafe_screen.theme)
 	if failures == 0:
-		print("PASS: 8 viewports, real stretch, readable labels, touch targets, navigation, settings and theme states")
+		print("PASS: 5 landscape viewports, real stretch, readable labels, touch targets, navigation, settings and theme states")
 	quit(0 if failures == 0 else 1)
 
 func check_centered(screen: Control) -> void:
 	var column := screen.get_node("Content") as Control
-	check(column.size.x <= 720.1, "Portrait column width remains capped")
+	check(absf(column.size.x-screen.size.x)<0.1, "Landscape canvas uses full width")
 	check(absf(column.position.x + column.size.x / 2.0 - screen.size.x / 2.0) <= 0.1, "Portrait column stays centered")
 
 func check_settings(screen: Control, button: Button, bounds: Rect2, scale_factor: float) -> void:
@@ -115,8 +115,8 @@ func check_settings(screen: Control, button: Button, bounds: Rect2, scale_factor
 	check(bounds.encloses(panel.get_node("Center/Panel").get_global_rect()), "Settings card fits")
 	var layout := panel.get_node("Center/Panel/Margins/Layout")
 	text_fits(layout.get_node("Description"), "Settings description", 16, scale_factor)
-	if root.size == Vector2i(320, 568):
-		await capture("settings-320x568")
+	if root.size == Vector2i(960, 540):
+		await capture("settings-%dx%d" % [root.size.x,root.size.y])
 	var back := layout.get_node("Close") as Button
 	touch_target(back, scale_factor)
 	check(back.get_theme_font_size("font_size") * scale_factor >= 16.0, "Back text readable")

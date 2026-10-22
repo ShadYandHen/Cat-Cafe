@@ -3,6 +3,7 @@ extends "res://Scripts/UI/portrait_layout.gd"
 var _starting := false
 
 func _ready() -> void:
+	preload("res://Scripts/UI/playtest_window.gd").configure(get_window())
 	super._ready()
 	$Content/Layout/Play.pressed.connect(_play)
 	$Content/Layout/Settings.pressed.connect($SettingsPanel.open)

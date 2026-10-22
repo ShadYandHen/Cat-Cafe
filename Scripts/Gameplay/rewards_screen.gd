@@ -200,6 +200,7 @@ func _process(_delta: float) -> void:
 	$Content.size=bounds.size
 	var factor: float=cafe_screen.ui_scale
 	# Include dynamic feedback to reapply sizing after any rebuilt label wraps.
+	preload("res://Scripts/UI/landscape_menu.gd").arrange($Content/Layout,factor)
 	var metrics: Array=[factor,bounds.size]
 	if metrics==_metrics:
 		return
@@ -209,9 +210,9 @@ func _process(_delta: float) -> void:
 	$Content/Layout.add_theme_constant_override("separation",ceili(8/factor))
 	for control in find_children("*","Control",true,false):
 		if control is Label or control is Button:
-			control.add_theme_font_size_override("font_size",ceili(maxf(28,16/factor)))
+			control.add_theme_font_size_override("font_size",ceili(16.0/factor))
 		if control is Button:
 			control.custom_minimum_size.y=ceili(48/factor)
 		if control is VBoxContainer:
 			control.add_theme_constant_override("separation",ceili(12/factor))
-	$Content/Layout/Heading.add_theme_font_size_override("font_size",ceili(maxf(36,22/factor)))
+	$Content/Layout/Heading.add_theme_font_size_override("font_size",ceili(22.0/factor))

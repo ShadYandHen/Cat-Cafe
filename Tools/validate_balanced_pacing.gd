@@ -297,10 +297,10 @@ func click(button: Button, touch: bool) -> void:
 	await settle()
 
 func ui() -> void:
-	root.content_scale_size=Vector2i(720,1280)
+	root.content_scale_size=Vector2i(1280,720)
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect=Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720,1280),Vector2i(320,568)]:
+	for dimensions in [Vector2i(1280,720),Vector2i(960,540)]:
 		root.size=dimensions
 		var main := MAIN.instantiate() as Control
 		var s := main.get_node("CafeSession") as CafeSession
@@ -317,13 +317,13 @@ func ui() -> void:
 		if DisplayServer.get_name()!="headless":
 			await RenderingServer.frame_post_draw
 			check(root.get_texture().get_image().save_png(folder.path_join("cafe-%d.png" % dimensions.x))==OK,"Capture two-seat portrait")
-		await click(right,dimensions.x==320)
+		await click(right,dimensions.x==960)
 		var selected := s.get_order(s.selected_order_id)
 		var deadline := selected.deadline
 		var panel := view.get_node("OrderScreen/Content/Layout")
 		check(panel.get_node("Patience").text.contains("patience"),"Patience label remains present")
-		await click(panel.get_node("Action"),dimensions.x==320)
-		await click(view.get_node("CoffeeEquipment"),dimensions.x==320)
+		await click(panel.get_node("Action"),dimensions.x==960)
+		await click(view.get_node("CoffeeEquipment"),dimensions.x==960)
 		check(s.view==CafeSession.View.STATION and selected.deadline==deadline,"Station opens without resetting patience")
 		main.get_node("SettingsPanel").open()
 		s.advance_time(5)

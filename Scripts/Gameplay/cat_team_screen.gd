@@ -90,15 +90,16 @@ func _process(_delta: float) -> void:
 	$Content.position = bounds.position
 	$Content.size = bounds.size
 	var factor: float = cafe_screen.ui_scale
+	preload("res://Scripts/UI/landscape_menu.gd").arrange($Content/Layout,factor)
 	var metrics: Array = [factor, bounds.size]
 	if metrics == _metrics:
 		return
 	_metrics = metrics
-	var font_size := ceili(maxf(28, 16.0 / factor))
+	var font_size := ceili(16.0 / factor)
 	for side in ["left", "right", "top", "bottom"]:
 		$Content.add_theme_constant_override("margin_" + side, ceili(12 / factor))
 	$Content/Layout.add_theme_constant_override("separation", ceili(8 / factor))
-	$Content/Layout/Heading.add_theme_font_size_override("font_size", ceili(maxf(36, 22.0 / factor)))
+	$Content/Layout/Heading.add_theme_font_size_override("font_size", ceili(22.0 / factor))
 	$Content/Layout/Status.add_theme_font_size_override("font_size", font_size)
 	$Content/Layout/Scroll/Body/Summary.add_theme_font_size_override("font_size", font_size)
 	$Content/Layout/Scroll/Body.add_theme_constant_override("separation", ceili(12 / factor))

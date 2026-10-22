@@ -5,6 +5,8 @@ var screen: Control
 var previous_focus: Control
 var _shown_view: int = -1
 var _layout_signature: Array = []
+var _reflow_frames:=0
+var drink_visuals: Dictionary = {} # Presentation-only ingredient snapshots, never saved.
 const EQUIPMENT := ["CoffeeEquipment", "MilkEquipment", "TeaEquipment", "ColdEquipment"]
 
 func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
@@ -44,7 +46,7 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 		get_node(EQUIPMENT[i]).pressed.connect(_open_equipment.bind(DrinkCatalog.CATEGORIES[i]))
 	var body := $CoffeeStation/Content/Layout/Workspace/Body
 	for i in range(4):
-		body.get_node("Stations").get_child(i).pressed.connect(session.select_station.bind(DrinkCatalog.CATEGORIES[i]))
+		$CoffeeStation/Content/Layout/Stations.get_child(i).pressed.connect(session.select_station.bind(DrinkCatalog.CATEGORIES[i]))
 	for i in range(DrinkCatalog.INGREDIENTS.size()):
 		body.get_node("Ingredients").get_child(i).pressed.connect(session.toggle_ingredient.bind(DrinkCatalog.INGREDIENTS[i]))
 	$OrderScreen/Content/Layout/Action.pressed.connect(_order_action)
@@ -102,6 +104,7 @@ func _process(_delta: float) -> void:
 	if session == null:
 		return
 	_layout()
+	_sync_drink_visuals()
 	$Status.size.y = $Status.get_minimum_size().y
 	var selected := session.get_order(session.selected_order_id)
 	var target: float = session.preparation_target()
@@ -145,12 +148,11 @@ func _refresh() -> void:
 	order_action.disabled = true
 	station_action.disabled = true
 	order_panel.get_node("Progress").hide()
-	station.get_node("Workspace/Body/Progress").visible = selected != null and selected.state == CafeSession.State.ORDER_ACCEPTED
+	station.get_node("Workspace/Body/Progress").hide() # Read-only timing guide is pinned with the cup.
 	var available := selected != null and selected.state not in [CafeSession.State.SERVED, CafeSession.State.DEPARTED]
 	if not available:
 		order_panel.get_node("Description").text = "This guest has left.\nTheir order cannot be served."
 		order_action.text = "Guest departed"
-		station.get_node("Workspace/Body/Description").text = "Select an accepted order." if session.selected_order_id < 0 else "This guest has left.\nSelect another order or return to the café."
 		station_action.text = "No selected order"
 	else:
 		var title := "#%d · %s\nNeeds: %s" % [selected.order_id, selected.requested_drink, ", ".join(selected.recipe.ingredients)]
@@ -159,35 +161,30 @@ func _refresh() -> void:
 				order_panel.get_node("Description").text = title + "\nAccept this guest's order."
 				order_action.text = "Accept Order"
 				order_action.disabled = false
-				station.get_node("Workspace/Body/Description").text = "Take the guest's order before preparation."
 				station_action.text = "Accept an order first"
 			CafeSession.State.ORDER_ACCEPTED:
 				order_panel.get_node("Description").text = title + "\nPending. Return to the café and tap this order ticket."
 				order_action.text = "Waiting for drink"
 				if session.brewing:
-					station.get_node("Workspace/Body/Description").text = title + "\n%s: stop at %.1fs. Patience runs." % [selected.recipe.action, session.preparation_target()]
 					station_action.text = "Stop preparation"
 					station_action.disabled = false
 				elif session.brew_ready:
-					station.get_node("Workspace/Body/Description").text = title + "\nProcess stopped. Assemble drink."
 					station_action.text = "Assemble drink"
 					station_action.disabled = false
 				else:
-					station.get_node("Workspace/Body/Description").text = title + "\nSelect ingredients; stop %s at %.1fs." % [selected.recipe.action, session.preparation_target()]
 					station_action.text = "Start " + selected.recipe.action
 					station_action.disabled = selected.recipe.station != session.station_category
 			CafeSession.State.DRINK_READY:
 				order_panel.get_node("Description").text = title + "\n%s · %d/100\n+%d Coins · +%d XP" % [selected.quality_tier, selected.quality_score, session.service_preview(selected).coins, selected.reward_xp]
 				order_action.text = "Serve drink"
 				order_action.disabled = false
-				station.get_node("Workspace/Body/Description").text = title + "\nAlready ready. Return to the café and tap its Serve ticket."
 				station_action.text = "Drink already ready"
 	if session.view == CafeSession.View.ORDER and not session.profile.last_error.is_empty():
 		order_panel.get_node("Description").text += "\nSave failed. Reward not applied; retry."
 	station.get_node("Heading").text = session.station_category + " station"
 	var can_prepare: bool = available and selected.state == CafeSession.State.ORDER_ACCEPTED and selected.recipe.station == session.station_category
 	for i in range(4):
-		var tab := station.get_node("Workspace/Body/Stations").get_child(i) as Button
+		var tab := station.get_node("Stations").get_child(i) as Button
 		tab.theme_type_variation = &"MintButton" if DrinkCatalog.CATEGORIES[i] == session.station_category else &"Button"
 	for i in range(DrinkCatalog.INGREDIENTS.size()):
 		var ingredient: String = DrinkCatalog.INGREDIENTS[i]
@@ -269,6 +266,7 @@ func _refresh() -> void:
 		if not screen.get_node("SettingsPanel").visible:
 			_focus_default()
 	_clock_changed()
+	_sync_drink_visuals()
 
 func _clock_changed() -> void:
 	var hud := screen.get_node("Content/Layout/TopHUD/StatsRow")
@@ -291,7 +289,10 @@ func _clock_changed() -> void:
 	if selected != null:
 		detail = "Selected order #%d · %ds patience" % [selected.order_id, ceili(selected.remaining(session.elapsed))] if selected.state not in [CafeSession.State.SERVED, CafeSession.State.DEPARTED] else "Order #%d · Guest left" % selected.order_id
 	for panel in [$OrderScreen, $CoffeeStation]:
-		panel.get_node("Content/Layout/Patience").text = shift + "\n" + detail + "\n" + session.ability_status()
+		panel.get_node("Content/Layout/Patience").text = shift + " · " + detail
+		panel.get_node("Content/Layout/Patience").tooltip_text=session.ability_status()
+	$CoffeeStation/Content/Layout/Patience.text = "%s · %s" % [session.countdown(),"#%d · %ds patience" % [selected.order_id,ceili(selected.remaining(session.elapsed))] if selected != null else "Select an order"]
+	$CoffeeStation/Content/Layout/Patience.tooltip_text = detail+" · "+session.ability_status()
 	var selection_panel := StyleBoxFlat.new()
 	selection_panel.bg_color = Color("fff6e7")
 	selection_panel.border_color = Color("ad536b")
@@ -379,7 +380,7 @@ func _focus_default() -> void:
 func _layout() -> void:
 	var progress_label := screen.get_node("Content/Layout/Welcome") as Label
 	progress_label.visible = true
-	progress_label.add_theme_font_size_override("font_size", ceili(maxf(28, 16.0 / screen.ui_scale)))
+	progress_label.add_theme_font_size_override("font_size", ceili(16.0 / screen.ui_scale))
 	var cafe := screen.get_node("Content/Layout/Cafe") as Control
 	var stage := cafe.get_node("Stage") as Node2D
 	var scale_factor: float = screen.ui_scale
@@ -390,15 +391,19 @@ func _layout() -> void:
 	for panel in [$OrderScreen, $CoffeeStation, $DayResults, $DayLobby]:
 		panel.get_node("Content").position = content.position
 		panel.get_node("Content").size = content.size
-	if signature == _layout_signature:
+	for panel in [$OrderScreen,$DayResults,$DayLobby]:
+		preload("res://Scripts/UI/landscape_menu.gd").dialog(panel.get_node("Content/Layout"),scale_factor)
+	if signature == _layout_signature and _reflow_frames<=0:
 		return
+	if signature != _layout_signature:_reflow_frames=4
+	_reflow_frames-=1
 	_layout_signature = signature
-	var font_size := ceili(maxf(28, 16.0 / scale_factor))
+	var font_size := ceili(16.0 / scale_factor)
 	var factor: float = stage.scale.x
 	for i in range(2):
 		var actor := _actor(i)
 		actor.custom_minimum_size = Vector2.ZERO
-		actor.size = Vector2(280 * factor, maxf(250 * factor, 134.0 / scale_factor))
+		actor.size = Vector2(280 * factor, maxf(240 * factor, 160.0 / scale_factor))
 		var marker := "CustomerSeatLeft" if i == 0 else "CustomerSeatRight"
 		actor.position = stage.get_node(marker).global_position - global_position - Vector2(actor.size.x / 2, actor.size.y)
 		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
@@ -410,21 +415,21 @@ func _layout() -> void:
 				style.set_border_width_all(3)
 			actor.add_theme_stylebox_override(state, style)
 		var caption := actor.get_node("Caption") as Label
-		caption.add_theme_font_size_override("font_size", ceili(maxf(26, 14.0 / scale_factor)))
+		caption.add_theme_font_size_override("font_size", ceili(14.0 / scale_factor))
 		var ticket := actor.get_node("Ticket") as Button
 		ticket.position = Vector2.ZERO
-		ticket.size = Vector2(actor.size.x,maxf(116,64.0/scale_factor))
+		ticket.size = Vector2(actor.size.x,maxf(76,52.0/scale_factor))
 		caption.position = Vector2(maxf(52,24.0/scale_factor), 2.0/scale_factor)
-		caption.size = Vector2(actor.size.x - maxf(60,28.0/scale_factor),maxf(76,40.0/scale_factor))
+		caption.size = Vector2(actor.size.x - maxf(60,28.0/scale_factor),maxf(48,32.0/scale_factor))
 		var icon := ticket.get_node("DrinkIcon") as TextureRect
 		icon.position = Vector2(maxf(8,4.0/scale_factor),maxf(24,12.0/scale_factor))
 		icon.size = Vector2.ONE * maxf(36,17.0/scale_factor)
 		var cue := ticket.get_node("Cue") as Label
-		cue.add_theme_font_size_override("font_size",ceili(maxf(24,14.0/scale_factor)))
-		cue.position = Vector2(0,ticket.size.y-maxf(36,20.0/scale_factor))
-		cue.size = Vector2(ticket.size.x,maxf(36,20.0/scale_factor))
+		cue.add_theme_font_size_override("font_size",ceili(14.0/scale_factor))
+		cue.position = Vector2(0,ticket.size.y-maxf(30,22.0/scale_factor))
+		cue.size = Vector2(ticket.size.x,maxf(30,22.0/scale_factor))
 		var face := actor.get_node("Bunny") as Control
-		var state_height := maxf(36, 20.0 / scale_factor)
+		var state_height := maxf(30, 22.0 / scale_factor)
 		var bar_height := maxf(8, 6.0 / scale_factor)
 		var face_top := ticket.size.y + 2.0 / scale_factor
 		var face_size := minf(actor.size.x * 0.6, actor.size.y - face_top - state_height - bar_height - 6.0 / scale_factor)
@@ -438,18 +443,18 @@ func _layout() -> void:
 		background.set_corner_radius_all(6)
 		patience.add_theme_stylebox_override("background", background)
 		var state := actor.get_node("State") as Label
-		state.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
+		state.add_theme_font_size_override("font_size", ceili(14.0 / scale_factor))
 		state.position = Vector2(0, actor.size.y - state_height)
 		state.size = Vector2(actor.size.x, state_height)
 	for i in range(4):
 		var equipment := get_node(EQUIPMENT[i]) as Button
 		equipment.custom_minimum_size = Vector2.ZERO
-		equipment.size = Vector2(148 * factor, maxf(106 * factor, 48.0 / scale_factor))
-		equipment.position = stage.to_global(Vector2(26 + 160 * i, 340)) - global_position
+		equipment.size = Vector2(160 * factor, maxf(84 * factor, 48.0 / scale_factor))
+		equipment.position = stage.to_global(Vector2([40,220,900,1080][i], 175)) - global_position
 		equipment.configure(scale_factor)
-	$Status.position = cafe.global_position - global_position + Vector2(8, 0) / scale_factor
-	$Status.size = Vector2(cafe.size.x - 16.0 / scale_factor, 0)
-	$Status.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
+	$Status.position = screen.get_node("Content/Layout/Welcome").global_position - global_position - Vector2(cafe.size.x*0.52,0)
+	$Status.size = Vector2(cafe.size.x*0.48, 0)
+	$Status.add_theme_font_size_override("font_size", ceili(14.0 / scale_factor))
 	_clock_changed() # Refresh selection styles after layout metrics settle.
 	for panel in [$OrderScreen, $CoffeeStation, $DayResults, $DayLobby]:
 		var column := panel.get_node("Content") as MarginContainer
@@ -457,22 +462,82 @@ func _layout() -> void:
 		column.size = content.size
 		for side in ["left", "right", "top", "bottom"]:
 			column.add_theme_constant_override("margin_" + side, ceili(12.0 / scale_factor))
-		var layout := column.get_node("Layout") as VBoxContainer
+		if panel == $CoffeeStation:
+			for side in ["left","right","top","bottom"]:
+				column.add_theme_constant_override("margin_"+side,ceili(8.0/scale_factor))
+			column.get_node("Layout").configure(scale_factor)
+			continue
+		var layout := column.get_node("Layout") as Control
 		layout.add_theme_constant_override("separation", ceili(8.0 / scale_factor))
 		for name in (["Heading", "Patience"] if panel == $CoffeeStation else ["Heading", "Patience", "Description"]):
 			layout.get_node(name).add_theme_font_size_override("font_size", font_size)
-		layout.get_node("Heading").add_theme_font_size_override("font_size", ceili(maxf(36, 22.0 / scale_factor)))
+		layout.get_node("Heading").add_theme_font_size_override("font_size", ceili(22.0 / scale_factor))
 		for name in (["Action", "Back", "Settings", "CatTeam", "Shop"] if panel in [$DayResults, $DayLobby] else ["Action", "Back", "Settings"]):
 			var button := layout.get_node(name) as Button
 			button.custom_minimum_size.y = ceili(48.0 / scale_factor)
 			button.add_theme_font_size_override("font_size", font_size)
-		if panel == $CoffeeStation:
-			var body := layout.get_node("Workspace/Body")
-			body.get_node("Description").add_theme_font_size_override("font_size", font_size)
-			for group in ["Stations", "Ingredients"]:
-				for button in body.get_node(group).get_children():
-					button.custom_minimum_size.y = ceili(44.0 / scale_factor)
-					button.add_theme_font_size_override("font_size", ceili(14.0 / scale_factor))
-			for button in layout.get_node("OrderChoices").get_children():
-				button.custom_minimum_size.y = ceili(52.0 / scale_factor)
-				button.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
+		preload("res://Scripts/UI/landscape_menu.gd").dialog(layout,scale_factor)
+
+func _sync_drink_visuals() -> void:
+	if session == null:return
+	for id in drink_visuals.keys():
+		var existing := session.get_order(id)
+		if existing==null or existing.state in [CafeSession.State.SERVED,CafeSession.State.DEPARTED]:
+			drink_visuals.erase(id)
+	var selected := session.get_order(session.selected_order_id)
+	if selected != null and selected.state==CafeSession.State.ORDER_ACCEPTED:
+		drink_visuals[selected.order_id]={"ingredients":session.selected_ingredients.duplicate(),"completed_at":-1.0,"duration":session.brew_elapsed,"target":session.preparation_target()}
+	var data := _drink_snapshot(selected,session.station_category)
+	$CoffeeStation/Content/Layout/DrinkWorkspace.present(data)
+	var station := $CoffeeStation/Content/Layout
+	if selected == null:
+		station.get_node("Description").text="Tap a café ticket to select a drink."
+	elif selected.state in [CafeSession.State.SERVED,CafeSession.State.DEPARTED]:
+		station.get_node("Description").text="Guest left. Choose another order or return."
+	else:
+		station.get_node("Description").text="Needs: "+" · ".join(selected.recipe.ingredients)
+		if selected.recipe.station!=session.station_category:
+			station.get_node("Description").text="Use the "+selected.recipe.station+" station for this order."
+	for i in range(DrinkCatalog.INGREDIENTS.size()):
+		var ingredient: String=DrinkCatalog.INGREDIENTS[i]
+		var button := station.get_node("Workspace/Body/Ingredients").get_child(i)
+		button.present(ingredient,selected != null and ingredient in selected.recipe.get("ingredients",[]),ingredient in data.get("ingredients",[]))
+	var action := station.get_node("Action") as Button
+	action.theme_type_variation=&"PeachButton" if session.brewing else &"PrimaryButton"
+	for i in range(2):
+		var actor := _actor(i)
+		var order := session.get_order(session.order_at_seat(i))
+		var icon := actor.get_node("Ticket/DrinkIcon") as TextureRect
+		var preview := icon.get_node("CompletedDrink") as Control
+		preview.miniature=true
+		preview.visible=order != null and order.state==CafeSession.State.DRINK_READY
+		icon.self_modulate=Color(1,1,1,0 if preview.visible else 1)
+		if preview.visible:
+			preview.present(_drink_snapshot(order,order.recipe.category))
+
+func _drink_snapshot(order: CafeOrder, category: String) -> Dictionary:
+	var data := {"category":category,"state":"empty","ingredients":[],"target":session.preparation_target(),"elapsed":0.0,"order_id":-1,"recipe_name":"Choose an order"}
+	if order==null:return data
+	data.order_id=order.order_id
+	data.recipe_name=order.requested_drink
+	if order.state in [CafeSession.State.SERVED,CafeSession.State.DEPARTED]:
+		data.state="departed"
+		return data
+	if order.recipe.station!=category:
+		data.state="unavailable"
+		return data
+	if order.state==CafeSession.State.DRINK_READY:
+		var saved: Dictionary=drink_visuals.get(order.order_id,{"ingredients":[],"completed_at":session.elapsed})
+		if saved.completed_at<0:saved.completed_at=session.elapsed
+		drink_visuals[order.order_id]=saved
+		data.ingredients=saved.ingredients.duplicate()
+		data.state="complete"
+		data.quality_tier=order.quality_tier
+		data.elapsed=saved.get("duration",0.0)
+		data.target=saved.get("target",session.preparation_target())
+		data.celebration=minf(2,session.elapsed-float(saved.completed_at))
+		return data
+	data.ingredients=session.selected_ingredients.duplicate() if order.order_id==session.selected_order_id else []
+	data.state="brewing" if session.brewing else "stopped" if session.brew_ready else "selecting"
+	data.elapsed=session.brew_elapsed
+	return data

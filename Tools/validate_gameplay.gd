@@ -84,15 +84,15 @@ func layout_checks(main: Control) -> void:
 			check(control.get_theme_font_size("font_size") * scale_factor >= 16, control.name + " readable")
 	for i in range(controls.size()):
 		for j in range(i):
-			check(not controls[i].get_global_rect().intersects(controls[j].get_global_rect()), "Essential controls do not overlap: %s/%s" % [controls[i].name, controls[j].name])
+			check(not controls[i].get_global_rect().intersects(controls[j].get_global_rect()), "Essential controls do not overlap: %s/%s %s %s" % [controls[i].name, controls[j].name,controls[i].get_global_rect(),controls[j].get_global_rect()])
 
 func run() -> void:
-	root.content_scale_size = Vector2i(720, 1280)
+	root.content_scale_size = Vector2i(1280, 720)
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720, 1280), Vector2i(320, 568)]:
+	for dimensions in [Vector2i(1280, 720), Vector2i(960, 540)]:
 		root.size = dimensions
-		touch_mode = dimensions.x == 320
+		touch_mode = dimensions.x == 960
 		await complete_shift_ui()
 		print("PASS %s multi-order shift UI: %s" % ["touch" if touch_mode else "mouse", dimensions])
 	await expiry_and_live_clock()

@@ -140,6 +140,7 @@ func _process(_delta: float) -> void:
 	$Content.position=bounds.position
 	$Content.size=bounds.size
 	var factor: float=cafe_screen.ui_scale
+	preload("res://Scripts/UI/landscape_menu.gd").arrange($Content/Layout,factor)
 	var metrics: Array=[factor,bounds.size]
 	if metrics==_metrics:
 		return
@@ -148,7 +149,7 @@ func _process(_delta: float) -> void:
 		$Content.add_theme_constant_override("margin_"+side,ceili(12/factor))
 	$Content/Layout.add_theme_constant_override("separation",ceili(8/factor))
 	$Content/Layout/Scroll/Body.add_theme_constant_override("separation",ceili(16/factor))
-	var text_size := ceili(maxf(28,16/factor))
+	var text_size := ceili(16.0/factor)
 	var controls: Array[Node]=find_children("*","Control",true,false)
 	for control in controls:
 		if control is Label:
@@ -158,4 +159,4 @@ func _process(_delta: float) -> void:
 			control.custom_minimum_size.y=ceili(48/factor)
 		elif control is VBoxContainer and control!= $Content/Layout:
 			control.add_theme_constant_override("separation",ceili(10/factor))
-	$Content/Layout/Heading.add_theme_font_size_override("font_size",ceili(maxf(36,22/factor)))
+	$Content/Layout/Heading.add_theme_font_size_override("font_size",ceili(22.0/factor))

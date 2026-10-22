@@ -42,7 +42,7 @@ theme_override_constants/margin_right = 64
 theme_override_constants/margin_top = 40
 theme_override_constants/margin_bottom = 40
 
-[node name="Layout" type="VBoxContainer" parent="Content"]
+[node name="Layout" type="Control" parent="Content"]
 layout_mode = 2
 theme_override_constants/separation = 24
 

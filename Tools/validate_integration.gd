@@ -33,7 +33,7 @@ func raw(path: String, value: Variant) -> void:
 	f.close()
 
 func click(control: Button, scroll: ScrollContainer = null) -> void:
-	if scroll!=null:
+	if scroll!=null and scroll.is_ancestor_of(control):
 		scroll.ensure_control_visible(control)
 		await settle()
 	check(control.is_visible_in_tree() and not control.disabled,"Enabled journey input: "+control.name+" "+control.text)
@@ -71,12 +71,12 @@ func run() -> void:
 	lifecycle_regressions()
 	save_recovery_and_migration()
 	development_safety()
-	root.content_scale_size=Vector2i(720,1280)
+	root.content_scale_size=Vector2i(1280,720)
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect=Window.CONTENT_SCALE_ASPECT_EXPAND
-	for size in [Vector2i(720,1280),Vector2i(320,568)]:
+	for size in [Vector2i(1280,720),Vector2i(960,540)]:
 		root.size=size
-		touch=size.x==320
+		touch=size.x==960
 		await journey()
 		print("PASS integrated player journey at ",size)
 	finish()
@@ -275,7 +275,7 @@ func serve_one(id: int) -> void:
 	await click(view.get_node("CoffeeEquipment"))
 	var station := view.get_node("CoffeeStation/Content/Layout")
 	var body := station.get_node("Workspace/Body")
-	await click(body.get_node("Stations").get_child(DrinkCatalog.CATEGORIES.find(order.recipe.station)),station.get_node("Workspace"))
+	await click(station.get_node("Stations").get_child(DrinkCatalog.CATEGORIES.find(order.recipe.station)),station.get_node("Workspace"))
 	for ingredient in order.recipe.ingredients:
 		await click(body.get_node("Ingredients").get_child(DrinkCatalog.INGREDIENTS.find(ingredient)),station.get_node("Workspace"))
 	check(s.selected_ingredients.size()==order.recipe.ingredients.size(),"Scrolled station ingredient input matches requested recipe")
@@ -385,7 +385,7 @@ func long_term_rewards() -> void:
 	await click(season.get_node("Content/Layout/Tabs/Inbox"))
 	await click(season.inbox_cards["paw-season-0001:tier:40"].claim,season.get_node("Content/Layout/Scroll"))
 	check(p.owns_cosmetic("spring_blossom_badge") and p.seasonal_state().current.id=="paw-season-0002","Old-season claim and lottery release coexist")
-	for dimensions in [Vector2i(1280,720),Vector2i(1920,1080),Vector2i(320,568) if touch else Vector2i(720,1280)]:
+	for dimensions in [Vector2i(1280,720),Vector2i(1920,1080),Vector2i(960,540) if touch else Vector2i(1280,720)]:
 		root.size=dimensions
 		await settle()
 		check(absf(season.get_node("Content").get_global_rect().get_center().x-main.size.x/2)<1,"Integrated reward UI remains centered")
@@ -396,7 +396,7 @@ func cold_read(directory: String) -> void:
 		check(false,"Cold verification restricted to integration artifacts")
 		return
 	var verified := 0
-	root.content_scale_size=Vector2i(720,1280)
+	root.content_scale_size=Vector2i(1280,720)
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect=Window.CONTENT_SCALE_ASPECT_EXPAND
 	for file in DirAccess.get_files_at(directory):
@@ -408,7 +408,7 @@ func cold_read(directory: String) -> void:
 		if not safe_path:
 			continue
 		verified+=1
-		root.size=Vector2i(320,568) if file.contains("320") else Vector2i(720,1280)
+		root.size=Vector2i(960,540) if file.contains("960") else Vector2i(1280,720)
 		var data := CafeProfile.normalize(artifact.expected)
 		check(data.ok,"Cold expected checkpoint valid")
 		var profile := CafeProfile.new()

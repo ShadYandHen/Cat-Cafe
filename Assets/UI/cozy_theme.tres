@@ -13,8 +13,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="Button_hover"]
 bg_color = Color(1.0, 0.9571764705882353, 0.9021176470588236, 1)
@@ -29,8 +29,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="Button_pressed"]
 bg_color = Color(0.9, 0.8505882352941176, 0.7870588235294118, 1)
@@ -45,8 +45,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="Button_disabled"]
 bg_color = Color(0.9299999999999999, 0.9135294117647059, 0.8923529411764706, 1)
@@ -61,8 +61,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PrimaryButton_normal"]
 bg_color = Color(0.9333333333333333, 0.615686274509804, 0.6862745098039216, 1)
@@ -77,8 +77,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PrimaryButton_hover"]
 bg_color = Color(0.9480000000000001, 0.7002352941176471, 0.7552941176470588, 1)
@@ -93,8 +93,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PrimaryButton_pressed"]
 bg_color = Color(0.8400000000000001, 0.5541176470588236, 0.6176470588235294, 1)
@@ -109,8 +109,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PrimaryButton_disabled"]
 bg_color = Color(0.9099999999999999, 0.8147058823529412, 0.8358823529411765, 1)
@@ -125,8 +125,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="MintButton_normal"]
 bg_color = Color(0.7686274509803922, 0.8588235294117647, 0.7725490196078432, 1)
@@ -141,8 +141,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="MintButton_hover"]
 bg_color = Color(0.819529411764706, 0.8898823529411765, 0.8225882352941176, 1)
@@ -157,8 +157,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="MintButton_pressed"]
 bg_color = Color(0.691764705882353, 0.7729411764705882, 0.6952941176470588, 1)
@@ -173,8 +173,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="MintButton_disabled"]
 bg_color = Color(0.8605882352941177, 0.8876470588235295, 0.861764705882353, 1)
@@ -189,8 +189,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PeachButton_normal"]
 bg_color = Color(0.9490196078431372, 0.8, 0.7411764705882353, 1)
@@ -205,8 +205,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PeachButton_hover"]
 bg_color = Color(0.9602352941176471, 0.8440000000000001, 0.7981176470588236, 1)
@@ -221,8 +221,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PeachButton_pressed"]
 bg_color = Color(0.8541176470588235, 0.7200000000000001, 0.6670588235294118, 1)
@@ -237,8 +237,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="PeachButton_disabled"]
 bg_color = Color(0.9147058823529411, 0.87, 0.8523529411764705, 1)
@@ -253,8 +253,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="GoldButton_normal"]
 bg_color = Color(0.9568627450980393, 0.8235294117647058, 0.6078431372549019, 1)
@@ -269,8 +269,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="GoldButton_hover"]
 bg_color = Color(0.9663529411764706, 0.8623529411764705, 0.6941176470588235, 1)
@@ -285,8 +285,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="GoldButton_pressed"]
 bg_color = Color(0.8611764705882353, 0.7411764705882353, 0.5470588235294117, 1)
@@ -301,8 +301,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="GoldButton_disabled"]
 bg_color = Color(0.9170588235294117, 0.8770588235294118, 0.8123529411764706, 1)
@@ -317,8 +317,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="panel"]
 bg_color = Color(1, 0.945, 0.875, 1)
@@ -333,8 +333,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="wood"]
 bg_color = Color(0.56, 0.36, 0.25, 1)
@@ -349,8 +349,8 @@ corner_radius_bottom_left = 24
 corner_radius_bottom_right = 24
 content_margin_left = 10.0
 content_margin_right = 10.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="focus"]
 bg_color = Color(0, 0, 0, 0)

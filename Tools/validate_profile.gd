@@ -270,12 +270,12 @@ func click(button: Button, touch: bool, scroll: ScrollContainer = null) -> void:
 	await settle()
 
 func profile_ui() -> void:
-	root.content_scale_size=Vector2i(720,1280)
+	root.content_scale_size=Vector2i(1280,720)
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect=Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720,1280),Vector2i(320,568)]:
+	for dimensions in [Vector2i(1280,720),Vector2i(960,540)]:
 		root.size=dimensions
-		var touch: bool = dimensions.x==320
+		var touch: bool = dimensions.x==960
 		var path := path_for("ui")
 		var p := load_profile(path)
 		var main := MAIN.instantiate() as Control
@@ -329,7 +329,7 @@ func profile_ui() -> void:
 		check(restored.snapshot()==p.snapshot() and completed_snapshot.level==2 and completed_snapshot.xp==14 and restored.completed_days==1,"UI shift survives full profile reload")
 		print("PASS profile UI at ",dimensions)
 
-func check_panel(main: Control, layout: VBoxContainer) -> void:
+func check_panel(main: Control, layout: Control) -> void:
 	var bounds := Rect2(Vector2.ZERO,main.size)
 	for name in ["Heading","Patience","Description","Action","CatTeam","Settings"]:
 		var control := layout.get_node(name) as Control

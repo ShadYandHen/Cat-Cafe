@@ -5,19 +5,19 @@ config_version=5
 config/name="Paw Pads Café"
 run/main_scene="res://Scenes/Title.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
-config/description="Little Paws. Big Dreams. A cozy portrait-first café foundation."
+config/description="Little Paws. Big Dreams. A cozy landscape-first café foundation."
 config/icon="res://Assets/Branding/app_icon.svg"
 
 [autoload]
 PlayerProfile="*res://Scripts/Persistence/player_profile.gd"
 
 [display]
-window/size/viewport_width=720
-window/size/viewport_height=1280
-window/size/window_width_override=432
-window/size/window_height_override=768
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1152
+window/size/window_height_override=648
 window/size/resizable=true
-window/handheld/orientation=1
+window/handheld/orientation=0
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 

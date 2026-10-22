@@ -15,7 +15,7 @@ anchor_bottom = 1.0
 color = Color(0.98, 0.94, 0.87, 1)
 [node name="Content" type="MarginContainer" parent="."]
 layout_mode = 0
-[node name="Layout" type="VBoxContainer" parent="Content"]
+[node name="Layout" type="Control" parent="Content"]
 layout_mode = 2
 [node name="Heading" type="Label" parent="Content/Layout"]
 layout_mode = 2

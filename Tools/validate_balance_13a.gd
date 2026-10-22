@@ -347,12 +347,12 @@ func click(button: Button, touch: bool) -> void:
 	await settle()
 
 func ui() -> void:
-	root.content_scale_size = Vector2i(720,1280)
+	root.content_scale_size = Vector2i(1280,720)
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720,1280), Vector2i(320,568)]:
+	for dimensions in [Vector2i(1280,720), Vector2i(960,540)]:
 		root.size = dimensions
-		var touch: bool = dimensions.x == 320
+		var touch: bool = dimensions.x == 960
 		var main := load("res://Scenes/Main.tscn").instantiate() as Control
 		var s := main.get_node("CafeSession") as CafeSession
 		s.profile = fixture()
@@ -382,7 +382,7 @@ func ui() -> void:
 		description = view.get_node("DayResults/Content/Layout/Description")
 		check(description.text.contains("+200 Seasonal XP"), "Day results disclose new completed-day rate")
 		var action := view.get_node("DayResults/Content/Layout/Action") as Button
-		check(description.get_global_rect().end.y <= action.get_global_rect().position.y and action.get_global_rect().end.y <= main.size.y, "Results text and next-day action fit portrait viewport")
+		check(not description.get_global_rect().intersects(action.get_global_rect()) and Rect2(Vector2.ZERO,main.size).encloses(description.get_global_rect()) and Rect2(Vector2.ZERO,main.size).encloses(action.get_global_rect()), "Results text and next-day action fit landscape without overlap")
 		if DisplayServer.get_name() != "headless":
 			await RenderingServer.frame_post_draw
 			check(root.get_texture().get_image().save_png(folder.path_join("results-%d.png" % dimensions.x)) == OK, "Capture native results layout")

@@ -263,12 +263,12 @@ func run() -> void:
 		if argument.begins_with("--capture-dir="):
 			captures=argument.trim_prefix("--capture-dir=")
 			DirAccess.make_dir_recursive_absolute(captures)
-	root.content_scale_size=Vector2i(720,1280)
+	root.content_scale_size=Vector2i(1280,720)
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect=Window.CONTENT_SCALE_ASPECT_EXPAND
-	for dimensions in [Vector2i(720,1280),Vector2i(320,568)]:
+	for dimensions in [Vector2i(1280,720),Vector2i(960,540)]:
 		root.size=dimensions
-		touch=dimensions.x==320
+		touch=dimensions.x==960
 		await direct_service()
 		await stale_press()
 		await recipes_and_secondary_routes()

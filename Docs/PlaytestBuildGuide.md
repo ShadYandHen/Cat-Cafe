@@ -1,5 +1,7 @@
 # Step 15 — Playtest builds
 
+Current orientation: landscape only, 1280×720 reference. See [Step 16L](LandscapeConversion16L.md) for current exports and validation. Step 15 measurements below are historical.
+
 ## Status and artifacts
 
 Godot **4.6.3.stable.official.7d41c59c4**, branch `work`, base commit
@@ -91,7 +93,7 @@ device check. No artwork was generated to silence this tooling warning.
 
 **Windows:** extract the entire ZIP, keep all three files together, run
 `PawPadsCafe.exe`. Use `.console.exe` to capture runtime diagnostics. Resize the
-window; wider desktop presentation should stay centered in a portrait area. Test
+window in landscape; 16:9 and wider layouts fill the safe canvas. Test
 on a dedicated Windows test account to isolate an existing player's save.
 
 **Android:** copy the APK to the test phone, enable installation from that source
@@ -213,9 +215,9 @@ save copies with the issue; do not put private player data in a public report.
 - [ ] Close after service, purchase, claim and day completion; reopen and verify all
   permanent values, team/equipment, seasonal state and fractional tip continuity.
 - [ ] Close mid-shift: fresh opening, no restored orders or duplicate reward/day XP.
-- [ ] Android: portrait rotation lock, cutouts/gesture navigation, touch scroll, back
+- [ ] Android: landscape rotation lock, cutouts/gesture navigation, touch scroll, back
   controls, background/foreground, force-stop/reopen, offline operation and updates.
-- [ ] Windows: executable outside editor, mouse/keyboard/focus, resize portrait/wide,
+- [ ] Windows: executable outside editor, mouse/keyboard/focus, resize 16:9/wider,
   display scaling and minimized/restored window.
 - [ ] Record responsiveness/stalls, overheating, audio/input errors, confusing actions,
   difficulty and suggestions. Automated tests do not establish fun or comfort.
