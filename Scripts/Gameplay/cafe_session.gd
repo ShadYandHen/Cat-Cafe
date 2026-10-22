@@ -62,7 +62,7 @@ var brew_order_id: int = -1
 var brew_started_at: float = 0.0
 var brew_ready: bool = false
 var next_arrival: float = INF
-var feedback: String = "Tap a guest to take their order."
+var feedback: String = "Tap an order ticket to prepare."
 var _next_id: int = 1 # Never reset: stale actions cannot target a new day's orders.
 var _last_second: int = -1
 var _rng := RandomNumberGenerator.new()
@@ -153,7 +153,7 @@ func _begin_day() -> void:
 	_shift_upgrade_bonuses = profile.upgrade_bonuses().duplicate()
 	phase = Phase.OPENING
 	view = View.CAFE
-	feedback = "Tap a guest to take their order."
+	feedback = "Tap an order ticket to prepare."
 	_rng.seed = schedule_seed + day
 	_arrive()
 	next_arrival = _interval()
@@ -270,9 +270,24 @@ func accept_order() -> void:
 	if order.state != State.WAITING_ORDER:
 		return
 	order.state = State.ORDER_ACCEPTED
-	feedback = "Order #%d accepted. Tap Prepare." % order.order_id
+	feedback = "Order #%d accepted. Tap its ticket to prepare." % order.order_id
 	view = View.CAFE
 	changed.emit()
+
+func prepare_order(id: int) -> void:
+	# Ticket navigation only. Unique IDs + _available reject departed/stale orders.
+	if view != View.CAFE or phase in [Phase.RESULTS, Phase.PRE_DAY] or not _available(id):
+		return
+	var order := get_order(id)
+	if order.state == State.WAITING_ORDER:
+		open_order(id)
+		accept_order()
+	elif order.state == State.ORDER_ACCEPTED:
+		selected_order_id = id
+	else:
+		return # Ready drinks use explicit manual serving, never another draft.
+	if view == View.CAFE and _available(id) and selected_order_id == id:
+		open_station()
 
 func open_station() -> void:
 	if view != View.CAFE or phase in [Phase.RESULTS, Phase.PRE_DAY]:

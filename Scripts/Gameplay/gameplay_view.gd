@@ -36,10 +36,12 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 	$Customer.pressed.connect(_open_seat.bind(0))
 	$CustomerRight.pressed.connect(_open_seat.bind(1))
 	$CustomerRight/Bunny.bear = true
+	for i in range(2):
+		var ticket := _actor(i).get_node("Ticket") as Button
+		ticket.button_down.connect(_arm_ticket.bind(ticket))
+		ticket.pressed.connect(_use_ticket.bind(ticket))
 	for i in range(4):
 		get_node(EQUIPMENT[i]).pressed.connect(_open_equipment.bind(DrinkCatalog.CATEGORIES[i]))
-	screen.get_node("Content/Layout/BottomNavigation/Prepare").pressed.connect(session.open_station)
-	screen.get_node("Content/Layout/BottomNavigation/Prepare").tooltip_text = "Prepare a drink"
 	var body := $CoffeeStation/Content/Layout/Workspace/Body
 	for i in range(4):
 		body.get_node("Stations").get_child(i).pressed.connect(session.select_station.bind(DrinkCatalog.CATEGORIES[i]))
@@ -59,11 +61,36 @@ func setup(cafe_screen: Control, cafe_session: CafeSession) -> void:
 
 func _open_equipment(category: String) -> void:
 	# Session owns availability and selection; equipment adds no gameplay state.
-	if session.view != CafeSession.View.CAFE or get_node(EQUIPMENT[DrinkCatalog.CATEGORIES.find(category)]).disabled:
+	var category_index := DrinkCatalog.CATEGORIES.find(category)
+	if category_index < 0 or session.view != CafeSession.View.CAFE or get_node(EQUIPMENT[category_index]).disabled:
 		return
-	session.open_station()
+	var selected := session.get_order(session.selected_order_id)
+	if selected != null and selected.state == CafeSession.State.WAITING_ORDER:
+		session.prepare_order(selected.order_id)
+	else:
+		session.open_station()
 	if session.view == CafeSession.View.STATION:
 		session.select_station(category)
+
+func _arm_ticket(ticket: Button) -> void:
+	# Capture the rendered identity at press-down, not the next occupant at release.
+	ticket.set_meta("pressed_order_id", ticket.get_meta("order_id", -1))
+
+func _use_ticket(ticket: Button) -> void:
+	var id: int = ticket.get_meta("pressed_order_id", -1)
+	ticket.set_meta("pressed_order_id", -1)
+	if ticket.disabled or session.view != CafeSession.View.CAFE or id < 0 or id != ticket.get_meta("order_id", -1):
+		return
+	var order := session.get_order(id)
+	if order == null or session.order_at_seat(order.seat) != id:
+		return
+	if order.state == CafeSession.State.DRINK_READY:
+		# This tap is the manual Serve action; use the existing durable transaction.
+		session.open_order(id)
+		if session.view == CafeSession.View.ORDER and session.selected_order_id == id:
+			session.serve()
+	else:
+		session.prepare_order(id)
 
 func _open_seat(seat: int) -> void:
 	session.open_order(session.order_at_seat(seat))
@@ -135,7 +162,7 @@ func _refresh() -> void:
 				station.get_node("Workspace/Body/Description").text = "Take the guest's order before preparation."
 				station_action.text = "Accept an order first"
 			CafeSession.State.ORDER_ACCEPTED:
-				order_panel.get_node("Description").text = title + "\nPending. Tap Prepare."
+				order_panel.get_node("Description").text = title + "\nPending. Return to the café and tap this order ticket."
 				order_action.text = "Waiting for drink"
 				if session.brewing:
 					station.get_node("Workspace/Body/Description").text = title + "\n%s: stop at %.1fs. Patience runs." % [selected.recipe.action, session.preparation_target()]
@@ -153,7 +180,7 @@ func _refresh() -> void:
 				order_panel.get_node("Description").text = title + "\n%s · %d/100\n+%d Coins · +%d XP" % [selected.quality_tier, selected.quality_score, session.service_preview(selected).coins, selected.reward_xp]
 				order_action.text = "Serve drink"
 				order_action.disabled = false
-				station.get_node("Workspace/Body/Description").text = title + "\nAlready ready. Tap this guest to serve."
+				station.get_node("Workspace/Body/Description").text = title + "\nAlready ready. Return to the café and tap its Serve ticket."
 				station_action.text = "Drink already ready"
 	if session.view == CafeSession.View.ORDER and not session.profile.last_error.is_empty():
 		order_panel.get_node("Description").text += "\nSave failed. Reward not applied; retry."
@@ -175,7 +202,7 @@ func _refresh() -> void:
 		button.visible = i < choices.size()
 		if button.visible:
 			button.set_meta("order_id", choices[i].order_id)
-			button.theme_type_variation = &"MintButton" if choices[i].order_id == session.selected_order_id else &"Button"
+			button.theme_type_variation = &"PrimaryButton" if choices[i].order_id == session.selected_order_id else &"Button"
 	var lobby := $DayLobby/Content/Layout
 	lobby.get_node("Progress").hide()
 	lobby.get_node("Back").hide()
@@ -212,6 +239,10 @@ func _refresh() -> void:
 		if actor.visible:
 			var order := session.get_order(session.order_at_seat(i))
 			actor.theme_type_variation = [&"PeachButton", &"GoldButton", &"MintButton"][order.state]
+			actor.get_node("Ticket").set_meta("order_id",order.order_id)
+		else:
+			actor.get_node("Ticket").set_meta("order_id",-1)
+			actor.get_node("Ticket").set_meta("pressed_order_id",-1)
 	for equipment in EQUIPMENT:
 		get_node(equipment).visible = session.view == CafeSession.View.CAFE
 	screen.get_node("Content/Layout/Cafe").set_barista(session.team.active_cat())
@@ -258,18 +289,47 @@ func _clock_changed() -> void:
 	var selected := session.get_order(session.selected_order_id)
 	var detail := "No selected order"
 	if selected != null:
-		detail = "Order #%d · %ds patience" % [selected.order_id, ceili(selected.remaining(session.elapsed))] if selected.state not in [CafeSession.State.SERVED, CafeSession.State.DEPARTED] else "Order #%d · Guest left" % selected.order_id
+		detail = "Selected order #%d · %ds patience" % [selected.order_id, ceili(selected.remaining(session.elapsed))] if selected.state not in [CafeSession.State.SERVED, CafeSession.State.DEPARTED] else "Order #%d · Guest left" % selected.order_id
 	for panel in [$OrderScreen, $CoffeeStation]:
 		panel.get_node("Content/Layout/Patience").text = shift + "\n" + detail + "\n" + session.ability_status()
+	var selection_panel := StyleBoxFlat.new()
+	selection_panel.bg_color = Color("fff6e7")
+	selection_panel.border_color = Color("ad536b")
+	selection_panel.set_corner_radius_all(12)
+	selection_panel.set_border_width_all(2 if selected != null and selected.state not in [CafeSession.State.SERVED,CafeSession.State.DEPARTED] else 0)
+	for panel in [$OrderScreen,$CoffeeStation]:
+		panel.get_node("Content/Layout/Patience").add_theme_stylebox_override("normal",selection_panel)
 	for i in range(2):
 		var order := session.get_order(session.order_at_seat(i))
 		if order != null:
 			var actor := _actor(i)
 			var fraction: float = order.remaining(session.elapsed) / order.original_patience
 			var low := fraction < 0.3
-			var state_label: String = ["Take order", "Preparing", "Serve drink"][order.state]
+			var state_label: String = ["Waiting", "Preparing", "Serve drink"][order.state]
 			actor.text = "Guest #%d: %s; %s; %ds patience" % [order.customer_id, order.requested_drink, state_label, ceili(order.remaining(session.elapsed))]
-			actor.tooltip_text = actor.text + " · Temporary woodland customer"
+			actor.tooltip_text = actor.text + " · Tap character for optional order details"
+			var selected_customer := order.order_id == session.selected_order_id
+			var ticket := actor.get_node("Ticket") as Button
+			ticket.text = ("Selected · " if selected_customer else "") + "%s order #%d: %s" % ["Serve" if order.state==CafeSession.State.DRINK_READY else "Prepare",order.order_id,order.requested_drink]
+			ticket.tooltip_text = ticket.text
+			ticket.get_node("Cue").text = ("✓ " if selected_customer else "") + "#%d · %s" % [order.order_id,"Serve" if order.state==CafeSession.State.DRINK_READY else "Prepare"] + ("" if selected_customer else " ›")
+			ticket.theme_type_variation = &"MintButton" if order.state==CafeSession.State.DRINK_READY else &"PrimaryButton"
+			var selected_ink := Color("ad536b")
+			for state in ["normal","hover","pressed"]:
+				var style := screen.theme.get_stylebox(state,ticket.theme_type_variation).duplicate() as StyleBoxFlat
+				style.content_margin_top=0
+				style.content_margin_bottom=0
+				style.set_border_width_all(3 if selected_customer else 1)
+				style.border_color=selected_ink if selected_customer else Color("805b46")
+				ticket.add_theme_stylebox_override(state,style)
+			var selection := actor.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
+			selection.set_border_width_all(2 if selected_customer else 0)
+			selection.border_color=selected_ink
+			actor.add_theme_stylebox_override("normal",selection)
+			var track := actor.get_node("Patience").get_theme_stylebox("background").duplicate() as StyleBoxFlat
+			track.set_border_width_all(2 if selected_customer else 0)
+			track.border_color=selected_ink
+			actor.get_node("Patience").add_theme_stylebox_override("background",track)
 			actor.get_node("Caption").text = order.requested_drink
 			actor.get_node("State").text = ("! " if low else "") + state_label
 			actor.get_node("Patience").value = fraction
@@ -277,12 +337,6 @@ func _clock_changed() -> void:
 			fill.bg_color = Color("b45962") if low else Color("b9904f") if fraction < 0.6 else Color("668b70")
 			fill.set_corner_radius_all(6)
 			actor.get_node("Patience").add_theme_stylebox_override("fill",fill)
-			var bubble := StyleBoxFlat.new()
-			bubble.bg_color = Color("fff6e7")
-			bubble.set_corner_radius_all(14)
-			bubble.border_color = Color("b45962") if low else Color("6c997b") if order.state == CafeSession.State.DRINK_READY else Color("805b46")
-			bubble.set_border_width_all(3 if order.order_id == session.selected_order_id else 1)
-			actor.get_node("Caption").add_theme_stylebox_override("normal",bubble)
 			actor.get_node("State").modulate = Color("a83f4e") if low else Color("805b46")
 	for button in $CoffeeStation/Content/Layout/OrderChoices.get_children():
 		var order := session.get_order(button.get_meta("order_id", -1))
@@ -311,7 +365,7 @@ func _focus_default() -> void:
 		else:
 			for i in range(2):
 				if _actor(i).visible:
-					_actor(i).grab_focus()
+					_actor(i).get_node("Ticket").grab_focus()
 					return
 			$CoffeeEquipment.grab_focus()
 	else:
@@ -344,7 +398,7 @@ func _layout() -> void:
 	for i in range(2):
 		var actor := _actor(i)
 		actor.custom_minimum_size = Vector2.ZERO
-		actor.size = Vector2(280 * factor, maxf(230 * factor, 112.0 / scale_factor))
+		actor.size = Vector2(280 * factor, maxf(250 * factor, 134.0 / scale_factor))
 		var marker := "CustomerSeatLeft" if i == 0 else "CustomerSeatRight"
 		actor.position = stage.get_node(marker).global_position - global_position - Vector2(actor.size.x / 2, actor.size.y)
 		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
@@ -357,12 +411,22 @@ func _layout() -> void:
 			actor.add_theme_stylebox_override(state, style)
 		var caption := actor.get_node("Caption") as Label
 		caption.add_theme_font_size_override("font_size", ceili(maxf(26, 14.0 / scale_factor)))
-		caption.position = Vector2.ZERO
-		caption.size = Vector2(actor.size.x, maxf(76, 40.0 / scale_factor))
+		var ticket := actor.get_node("Ticket") as Button
+		ticket.position = Vector2.ZERO
+		ticket.size = Vector2(actor.size.x,maxf(116,64.0/scale_factor))
+		caption.position = Vector2(maxf(52,24.0/scale_factor), 2.0/scale_factor)
+		caption.size = Vector2(actor.size.x - maxf(60,28.0/scale_factor),maxf(76,40.0/scale_factor))
+		var icon := ticket.get_node("DrinkIcon") as TextureRect
+		icon.position = Vector2(maxf(8,4.0/scale_factor),maxf(24,12.0/scale_factor))
+		icon.size = Vector2.ONE * maxf(36,17.0/scale_factor)
+		var cue := ticket.get_node("Cue") as Label
+		cue.add_theme_font_size_override("font_size",ceili(maxf(24,14.0/scale_factor)))
+		cue.position = Vector2(0,ticket.size.y-maxf(36,20.0/scale_factor))
+		cue.size = Vector2(ticket.size.x,maxf(36,20.0/scale_factor))
 		var face := actor.get_node("Bunny") as Control
 		var state_height := maxf(36, 20.0 / scale_factor)
 		var bar_height := maxf(8, 6.0 / scale_factor)
-		var face_top := caption.size.y + 2.0 / scale_factor
+		var face_top := ticket.size.y + 2.0 / scale_factor
 		var face_size := minf(actor.size.x * 0.6, actor.size.y - face_top - state_height - bar_height - 6.0 / scale_factor)
 		face.position = Vector2((actor.size.x - face_size) / 2, face_top)
 		face.size = Vector2.ONE * face_size
@@ -386,6 +450,7 @@ func _layout() -> void:
 	$Status.position = cafe.global_position - global_position + Vector2(8, 0) / scale_factor
 	$Status.size = Vector2(cafe.size.x - 16.0 / scale_factor, 0)
 	$Status.add_theme_font_size_override("font_size", ceili(maxf(24, 14.0 / scale_factor)))
+	_clock_changed() # Refresh selection styles after layout metrics settle.
 	for panel in [$OrderScreen, $CoffeeStation, $DayResults, $DayLobby]:
 		var column := panel.get_node("Content") as MarginContainer
 		column.position = content.position

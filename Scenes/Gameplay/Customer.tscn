@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 [ext_resource type="Script" path="res://Scripts/Gameplay/customer_placeholder.gd" id="1"]
+[ext_resource type="Texture2D" path="res://Assets/UI/Icons/prepare.svg" id="2"]
 [node name="Customer" type="Button"]
 theme_type_variation = &"PeachButton"
 text = "Guest"
@@ -10,6 +11,26 @@ theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
 tooltip_text = "Tap this guest to take or serve their Basic Coffee order"
+[node name="Ticket" type="Button" parent="."]
+theme_type_variation = &"PrimaryButton"
+text = "Prepare order"
+theme_override_font_sizes/font_size = 1
+theme_override_colors/font_color = Color(0,0,0,0)
+theme_override_colors/font_hover_color = Color(0,0,0,0)
+theme_override_colors/font_pressed_color = Color(0,0,0,0)
+theme_override_colors/font_focus_color = Color(0,0,0,0)
+theme_override_colors/font_disabled_color = Color(0,0,0,0)
+mouse_filter = 0
+[node name="DrinkIcon" type="TextureRect" parent="Ticket"]
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+[node name="Cue" type="Label" parent="Ticket"]
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Prepare ›"
 [node name="Bunny" type="Control" parent="."]
 mouse_filter = 2
 script = ExtResource("1")

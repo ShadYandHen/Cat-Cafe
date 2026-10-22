@@ -1,7 +1,7 @@
 extends SceneTree
 ## Exercises real canvas stretch, UI bounds, text sizes, touch targets and interactions.
 const VIEWPORTS := [Vector2i(320, 568), Vector2i(360, 640), Vector2i(375, 667), Vector2i(390, 844), Vector2i(430, 932), Vector2i(720, 1280), Vector2i(1280, 720), Vector2i(1920, 1080)]
-const NAV_NAMES := ["Upgrade", "Decorate", "Prepare", "Cat Team", "Map"]
+const NAV_NAMES := ["Upgrade", "Decorate", "Cat Team", "Map"]
 var failures: int = 0
 var capture_directory: String = ""
 
@@ -80,8 +80,8 @@ func validate() -> void:
 		touch_target(settings, scale_factor)
 		check(settings.get_theme_font_size("font_size") * scale_factor >= 16.0, "HUD Settings is readable")
 		var nav := layout.get_node("BottomNavigation") as Control
-		check(nav.get_child_count() == 5, "Five navigation controls")
-		for i in range(5):
+		check(nav.get_child_count() == 4, "Four secondary navigation controls")
+		for i in range(4):
 			var button := nav.get_child(i) as Button
 			check(button.text == NAV_NAMES[i], "Navigation has correct accessible label")
 			check(button.get_node("Caption").text == NAV_NAMES[i], "Navigation has correct visible label")
@@ -92,10 +92,10 @@ func validate() -> void:
 				check(button.get_global_rect().encloses(child.get_global_rect()), "%s child fits button" % button.name)
 			for j in range(i):
 				check(not button.get_global_rect().intersects(nav.get_child(j).get_global_rect()), "Navigation controls do not overlap")
-		check(nav.get_node("Prepare").size.y > nav.get_node("Upgrade").size.y, "Prepare has stronger size hierarchy")
+		check(not nav.has_node("Prepare"), "No redundant Prepare navigation")
 		await check_settings(cafe_screen, settings, bounds, scale_factor)
 		await capture("cafe-%dx%d" % [dimensions.x, dimensions.y])
-		print("PASS café: %s | HUD %.1fpx | nav %.1fpx | Settings %.1fpx" % [dimensions, hud.get_node("StatsRow/Coins").get_theme_font_size("font_size") * scale_factor, nav.get_node("Prepare/Caption").get_theme_font_size("font_size") * scale_factor, settings.size.y * scale_factor])
+		print("PASS café: %s | HUD %.1fpx | nav %.1fpx | Settings %.1fpx" % [dimensions, hud.get_node("StatsRow/Coins").get_theme_font_size("font_size") * scale_factor, nav.get_node("Upgrade/Caption").get_theme_font_size("font_size") * scale_factor, settings.size.y * scale_factor])
 	check_theme(cafe_screen.theme)
 	if failures == 0:
 		print("PASS: 8 viewports, real stretch, readable labels, touch targets, navigation, settings and theme states")
